@@ -1,0 +1,17 @@
+services:
+  proxlink:
+    build: .
+    image: proxlink:latest
+    container_name: proxlink
+    restart: unless-stopped
+    ports:
+      - '3000:3000'
+    environment:
+      - NODE_ENV=production
+      # Set to 1 only if you need to pull ISOs from private/LAN URLs.
+      - PROXLINK_ALLOW_PRIVATE_ISO=0
+    volumes:
+      - proxlink-data:/data
+
+volumes:
+  proxlink-data:

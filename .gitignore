@@ -1,0 +1,14 @@
+node_modules/
+.next/
+out/
+build/
+data/
+*.db
+*.db-*
+.env
+.env.local
+.DS_Store
+npm-debug.log*
+coverage/
+playwright-report/
+test-results/

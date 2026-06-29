@@ -5,6 +5,8 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import AppBar from '@/components/AppBar';
 import Icon from '@/components/Icon';
 import ConfirmDialog from '@/components/ConfirmDialog';
+import Snapshots from '@/components/guest/Snapshots';
+import BackupNow from '@/components/guest/BackupNow';
 import { PageShell, CardSkeleton, ErrorState, StatusBadge, Spinner } from '@/components/ui';
 import { api, pvePath } from '@/lib/client/fetcher';
 import type { GuestType } from '@/lib/proxmox/endpoints';
@@ -274,6 +276,9 @@ export default function GuestDetail() {
                 </div>
               )}
             </section>
+
+            {node && <Snapshots hostId={hostId} node={node} type={type} vmid={vmid} />}
+            {node && <BackupNow hostId={hostId} node={node} vmid={vmid} />}
 
             <button
               onClick={() => setConfirmDelete(true)}

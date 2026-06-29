@@ -55,6 +55,13 @@ export default function Dashboard() {
             ? `${hostsQ.data.length} host${hostsQ.data.length === 1 ? '' : 's'} · ${running} running`
             : undefined
         }
+        actions={
+          hostsQ.data && hostsQ.data.length > 0 ? (
+            <Link href="/create" aria-label="Create guest" className="btn-ghost text-accent flex items-center">
+              <Icon name="add" size={24} />
+            </Link>
+          ) : undefined
+        }
       />
       <PageShell>
         {hostsQ.isLoading && <CardSkeleton />}

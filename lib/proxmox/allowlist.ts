@@ -17,6 +17,7 @@ const RULES: Rule[] = [
   { method: 'GET', pattern: re('^/version$') },
   { method: 'GET', pattern: re('^/nodes$') },
   { method: 'GET', pattern: re('^/cluster/resources$') },
+  { method: 'GET', pattern: re('^/cluster/nextid$') },
   { method: 'GET', pattern: re(`^/nodes/${NODE}/status$`) },
   { method: 'GET', pattern: re(`^/nodes/${NODE}/(qemu|lxc)/${VMID}/status/current$`) },
   { method: 'GET', pattern: re(`^/nodes/${NODE}/(qemu|lxc)/${VMID}/config$`) },

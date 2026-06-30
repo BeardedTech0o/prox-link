@@ -37,7 +37,7 @@ html {
 body {
   font-family: 'Inter', system-ui, sans-serif;
   color: rgb(var(--c-primary));
-  background-color: rgb(var(--c-base));
+  @apply bg-slate-100 dark:bg-gray-950;
   background-image: radial-gradient(
       ellipse at 18% 0%,
       rgb(var(--c-accent) / 0.05) 0%,
@@ -50,7 +50,7 @@ body {
 
 @layer components {
   .card {
-    @apply bg-surface rounded-2xl shadow-card p-5;
+    @apply bg-white dark:bg-gray-900 rounded-2xl shadow-card p-5;
   }
   .panel {
     @apply bg-surface rounded-2xl shadow-card;
@@ -59,10 +59,10 @@ body {
     @apply bg-elevated rounded-2xl shadow-card;
   }
   .btn-ghost {
-    @apply px-3 py-1.5 rounded-xl hover:bg-elevated transition-colors cursor-pointer;
+    @apply px-3 py-1.5 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors;
   }
   .stat-label {
-    @apply text-xs font-medium text-secondary uppercase tracking-wide;
+    @apply text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wide;
   }
   .skeleton {
     @apply bg-elevated rounded animate-pulse;

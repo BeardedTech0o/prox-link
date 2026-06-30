@@ -1,0 +1,28 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd \"$CLAUDE_PROJECT_DIR\" && if [ ! -d node_modules ]; then echo 'ProxLink: installing dependencies…'; npm install --no-audit --no-fund >/tmp/proxlink-npm-install.log 2>&1 && echo 'ProxLink: dependencies ready (npm run typecheck | test | lint | build).' || echo 'ProxLink: npm install failed — see /tmp/proxlink-npm-install.log'; else echo 'ProxLink: node_modules present.'; fi"
+          }
+        ]
+      }
+    ]
+  },
+  "permissions": {
+    "allow": [
+      "Bash(npm run typecheck)",
+      "Bash(npm test)",
+      "Bash(npm run test:watch)",
+      "Bash(npm run lint)",
+      "Bash(npm run build)",
+      "Bash(npm install)",
+      "Bash(npm ci)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)"
+    ]
+  }
+}

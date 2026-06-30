@@ -13,7 +13,7 @@ BRIDGE="${BRIDGE:-vmbr0}"
 STORAGE="${STORAGE:-local-lvm}"
 TEMPLATE_STORAGE="${TEMPLATE_STORAGE:-local}"
 REPO_URL="${REPO_URL:-https://github.com/beardedtech0o/prox-link.git}"
-TEMPLATE="debian-12-standard_12.7-1_amd64.tar.zst"
+TEMPLATE="${TEMPLATE:-}"   # auto-detected below if unset; set to pin a specific build
 
 command -v pct >/dev/null || { echo "This must run on a Proxmox VE host (pct not found)."; exit 1; }
 
@@ -22,6 +22,16 @@ echo "==> Using CTID $CTID"
 
 echo "==> Ensuring LXC template is present"
 pveam update >/dev/null 2>&1 || true
+if [ -z "$TEMPLATE" ]; then
+  # Proxmox rotates Debian 12 point-release template builds, so resolve the
+  # newest available one instead of pinning an exact filename that expires.
+  TEMPLATE="$(pveam available --section system \
+    | awk '{print $2}' \
+    | grep '^debian-12-standard_' \
+    | sort -V | tail -1)"
+  [ -n "$TEMPLATE" ] || { echo "Could not find a debian-12-standard template in 'pveam available'."; exit 1; }
+fi
+echo "==> Using template $TEMPLATE"
 if ! pveam list "$TEMPLATE_STORAGE" | grep -q "$TEMPLATE"; then
   pveam download "$TEMPLATE_STORAGE" "$TEMPLATE"
 fi

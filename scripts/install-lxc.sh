@@ -69,6 +69,9 @@ pct exec "$CTID" -- bash -c '
 '
 pct exec "$CTID" -- bash -c "git clone '$REPO_URL' /opt/proxlink && cd /opt/proxlink && docker compose up -d --build"
 
+echo "==> Installing the watchdog (auto-restarts the container/daemon if it goes down)"
+pct exec "$CTID" -- bash /opt/proxlink/scripts/watchdog/install.sh
+
 IP="$(pct exec "$CTID" -- bash -c "hostname -I | awk '{print \$1}'")"
 echo "============================================================"
 echo " ProxLink is starting in CTID $CTID"

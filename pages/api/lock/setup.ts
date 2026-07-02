@@ -25,7 +25,7 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
     // Immediately unlock so setup flows straight into the app.
     const dek = unlockVault(pin, salt, wrappedDek);
     const sid = createSession(dek);
-    setSessionCookie(res, sid);
+    setSessionCookie(req, res, sid);
     res.status(201).json({ ok: true });
   } catch (err) {
     handleError(res, err);

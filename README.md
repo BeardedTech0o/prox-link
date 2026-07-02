@@ -114,7 +114,7 @@ Run this **on a Proxmox host** (via the node shell or SSH). It creates a Debian
 LXC, installs Docker, and starts ProxLink:
 
 ```bash
-bash -c "$(curl -fsSL https://raw.githubusercontent.com/beardedtech0o/prox-link/claude/proxmox-mobile-app-fomguw/scripts/install-lxc.sh)"
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/BeardedTech0o/prox-link/main/scripts/install-lxc.sh)"
 ```
 
 When it finishes it prints the container's IP and URL, e.g.
@@ -122,9 +122,9 @@ When it finishes it prints the container's IP and URL, e.g.
 with env vars:
 
 ```bash
-CTID=131 HOSTNAME=proxlink DISK_GB=6 RAM_MB=1024 CORES=2 \
+CTID=131 CT_HOSTNAME=proxlink DISK_GB=10 RAM_MB=1024 CORES=2 \
 BRIDGE=vmbr0 STORAGE=local-lvm \
-bash -c "$(curl -fsSL https://raw.githubusercontent.com/beardedtech0o/prox-link/claude/proxmox-mobile-app-fomguw/scripts/install-lxc.sh)"
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/BeardedTech0o/prox-link/main/scripts/install-lxc.sh)"
 ```
 
 ### Option B — Manual LXC + Docker Compose

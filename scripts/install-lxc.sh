@@ -5,8 +5,11 @@
 set -euo pipefail
 
 CTID="${CTID:-}"                         # auto-pick next free id if empty
-HOSTNAME="${HOSTNAME:-proxlink}"
-DISK_GB="${DISK_GB:-4}"
+# NOTE: named CT_HOSTNAME, not HOSTNAME — bash auto-populates HOSTNAME with the
+# Proxmox host's own hostname, so "${HOSTNAME:-proxlink}" would silently pick
+# that up instead of ever falling back to the default.
+CT_HOSTNAME="${CT_HOSTNAME:-proxlink}"
+DISK_GB="${DISK_GB:-10}"                 # Docker multi-stage build needs headroom beyond the final image size
 RAM_MB="${RAM_MB:-1024}"
 CORES="${CORES:-2}"
 BRIDGE="${BRIDGE:-vmbr0}"
@@ -38,7 +41,7 @@ fi
 
 echo "==> Creating container"
 pct create "$CTID" "${TEMPLATE_STORAGE}:vztmpl/${TEMPLATE}" \
-  --hostname "$HOSTNAME" \
+  --hostname "$CT_HOSTNAME" \
   --cores "$CORES" --memory "$RAM_MB" \
   --rootfs "${STORAGE}:${DISK_GB}" \
   --net0 "name=eth0,bridge=${BRIDGE},ip=dhcp" \

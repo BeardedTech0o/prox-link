@@ -31,6 +31,7 @@ function upstreamUrl(s: ConsoleSession): string {
 }
 
 function bridge(client: WebSocket, s: ConsoleSession) {
+  const tag = `[console] ${s.mode} node=${s.node} vmid=${s.vmid}`;
   const upstream = new WebSocket(upstreamUrl(s), ['binary'], {
     agent: upstreamAgent(s),
     headers: { Authorization: `PVEAPIToken=${s.host.tokenId}=${s.host.secret}` },
@@ -50,9 +51,27 @@ function bridge(client: WebSocket, s: ConsoleSession) {
     client.on('message', (d) => upstream.readyState === WebSocket.OPEN && upstream.send(d));
     upstream.on('message', (d) => client.readyState === WebSocket.OPEN && client.send(d));
   });
-  upstream.on('error', closeBoth);
-  upstream.on('close', closeBoth);
-  client.on('error', closeBoth);
+  // Fires when Proxmox answers the upgrade request with a non-101 HTTP response
+  // (e.g. a permission or auth rejection) — the most likely silent failure mode.
+  upstream.on('unexpected-response', (_req, res) => {
+    let body = '';
+    res.on('data', (c) => (body += c));
+    res.on('end', () => {
+      console.error(`${tag} upstream rejected upgrade: ${res.statusCode} ${res.statusMessage} ${body.slice(0, 500)}`);
+    });
+  });
+  upstream.on('error', (err) => {
+    console.error(`${tag} upstream error: ${err.message}`);
+    closeBoth();
+  });
+  upstream.on('close', (code, reason) => {
+    console.error(`${tag} upstream closed: code=${code} reason=${reason?.toString()}`);
+    closeBoth();
+  });
+  client.on('error', (err) => {
+    console.error(`${tag} client error: ${err.message}`);
+    closeBoth();
+  });
   client.on('close', closeBoth);
 }
 

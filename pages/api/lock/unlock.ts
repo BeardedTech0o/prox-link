@@ -37,7 +37,7 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
     }
     recordSuccess();
     const sid = createSession(dek);
-    setSessionCookie(res, sid);
+    setSessionCookie(req, res, sid);
     audit('lock.unlock');
     res.status(200).json({ ok: true });
   } catch (err) {

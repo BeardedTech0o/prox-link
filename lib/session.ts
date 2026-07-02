@@ -47,8 +47,18 @@ export function readSid(req: NextApiRequest): string | undefined {
   return req.cookies[COOKIE];
 }
 
-export function setSessionCookie(res: NextApiResponse, sid: string): void {
-  const secure = process.env.NODE_ENV === 'production';
+export function isHttps(req: NextApiRequest): boolean {
+  const proto = req.headers['x-forwarded-proto'];
+  const fwd = Array.isArray(proto) ? proto[0] : proto;
+  if (fwd) return fwd.split(',')[0].trim().toLowerCase() === 'https';
+  return Boolean((req.socket as any).encrypted);
+}
+
+export function setSessionCookie(req: NextApiRequest, res: NextApiResponse, sid: string): void {
+  // Secure must reflect the actual connection, not the build mode — a Secure
+  // cookie is silently dropped by browsers over plain HTTP, which is the
+  // documented self-hosted LAN deployment (NODE_ENV is "production" either way).
+  const secure = isHttps(req);
   res.setHeader('Set-Cookie', [
     `${COOKIE}=${sid}; HttpOnly; Path=/; SameSite=Strict; Max-Age=${Math.floor(
       ABSOLUTE_MS / 1000,

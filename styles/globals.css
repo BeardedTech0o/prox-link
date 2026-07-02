@@ -2,6 +2,16 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Self-hosted so icons never depend on reaching Google's CDN (self-hosted
+   deployments may have restricted/filtered outbound network access). */
+@font-face {
+  font-family: 'Material Symbols Outlined';
+  font-style: normal;
+  font-weight: 100 700;
+  font-display: block;
+  src: url('/fonts/material-symbols-outlined.woff2') format('woff2');
+}
+
 :root {
   --c-base: 241 244 248; /* #f1f4f8 — page bg */
   --c-surface: 255 255 255; /* cards, sidebar, modals */

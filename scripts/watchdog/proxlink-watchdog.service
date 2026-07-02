@@ -1,0 +1,9 @@
+[Unit]
+Description=ProxLink watchdog — restart the container if it's down
+After=docker.service
+Wants=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/proxlink-watchdog.sh
+EnvironmentFile=-/etc/default/proxlink-watchdog

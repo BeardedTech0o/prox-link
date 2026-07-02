@@ -201,6 +201,37 @@ git pull
 docker compose up -d --build
 ```
 
+## Watchdog (auto-recovery)
+
+`docker-compose.yml` sets `restart: unless-stopped`, but that only helps if
+the Docker daemon itself is healthy — it does nothing if the daemon gets
+wedged (this can happen after some Proxmox LXC backup modes freeze the
+filesystem mid-backup) and the container ends up stopped without restarting.
+
+Installs via `scripts/install-lxc.sh` get a watchdog automatically: a systemd
+timer that runs every 2 minutes, restarts the Docker daemon if it's
+unresponsive, and brings the container back up if it isn't running.
+
+**Add it to an existing deployment** (containers created before this existed):
+
+```bash
+pct exec <CTID> -- bash -c "cd /opt/proxlink && git pull"
+pct exec <CTID> -- bash /opt/proxlink/scripts/watchdog/install.sh
+```
+
+**Check it's working:**
+```bash
+pct exec <CTID> -- journalctl -u proxlink-watchdog.service -n 50
+```
+
+**Optional alerts** when it has to intervene — create
+`/etc/default/proxlink-watchdog` inside the container with a webhook URL
+(Discord/Slack/ntfy/etc. all accept a simple JSON POST):
+```
+PROXLINK_WATCHDOG_WEBHOOK=https://your-webhook-url
+```
+then `pct exec <CTID> -- systemctl restart proxlink-watchdog.timer`.
+
 ## Development
 
 ```bash

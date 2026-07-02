@@ -69,8 +69,16 @@ body {
   }
 
   .material-symbols-outlined {
+    font-family: 'Material Symbols Outlined';
     font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 20;
+    font-weight: normal;
+    font-style: normal;
     line-height: 1;
+    white-space: nowrap;
+    word-wrap: normal;
     user-select: none;
+    -webkit-font-feature-settings: 'liga';
+    -moz-font-feature-settings: 'liga';
+    font-feature-settings: 'liga';
   }
 }

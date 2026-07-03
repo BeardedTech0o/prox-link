@@ -43,6 +43,7 @@ function bridge(client: WebSocket, s: ConsoleSession) {
   };
 
   upstream.on('open', () => {
+    console.error(`${tag} bridged successfully`);
     // For LXC terminals the first upstream message must authenticate; we inject
     // it here so the ticket never has to be exposed to the browser.
     if (s.mode === 'term') {

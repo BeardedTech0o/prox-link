@@ -26,11 +26,15 @@ export function createConsoleSession(s: Omit<ConsoleSession, 'expires'>): string
   return cid;
 }
 
-export function takeConsoleSession(cid: string | undefined): ConsoleSession | null {
-  if (!cid) return null;
+export type TakeSessionResult =
+  | { ok: true; session: ConsoleSession }
+  | { ok: false; reason: 'missing-cid' | 'not-found' | 'expired' };
+
+export function takeConsoleSession(cid: string | undefined): TakeSessionResult {
+  if (!cid) return { ok: false, reason: 'missing-cid' };
   const s = store.get(cid);
-  if (!s) return null;
+  if (!s) return { ok: false, reason: 'not-found' };
   store.delete(cid); // single use
-  if (Date.now() > s.expires) return null;
-  return s;
+  if (Date.now() > s.expires) return { ok: false, reason: 'expired' };
+  return { ok: true, session: s };
 }

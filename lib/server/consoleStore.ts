@@ -18,7 +18,21 @@ export interface ConsoleSession {
 }
 
 const TTL_MS = 60 * 1000; // tickets are single-use and short-lived
-const store = new Map<string, ConsoleSession>();
+
+// pages/api/console/connect.ts (a Next.js API route, bundled independently by
+// Next's own webpack build) and this file's other consumer — server.ts's
+// direct `tsx` import of consoleProxy.ts, entirely outside Next's bundler —
+// can end up as two separate instances of this module in the same process.
+// A plain module-level Map would then be invisible across that boundary:
+// tickets created via the API route would never be found by the WebSocket
+// upgrade handler. Back it with a value on globalThis so every instance of
+// this module shares the exact same Map.
+declare global {
+  // eslint-disable-next-line no-var
+  var __proxlinkConsoleStore: Map<string, ConsoleSession> | undefined;
+}
+
+const store = globalThis.__proxlinkConsoleStore ?? (globalThis.__proxlinkConsoleStore = new Map());
 
 export function createConsoleSession(s: Omit<ConsoleSession, 'expires'>): string {
   const cid = randomBytes(24).toString('base64url');

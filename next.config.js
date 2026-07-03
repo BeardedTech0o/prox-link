@@ -35,6 +35,13 @@ const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
   productionBrowserSourceMaps: false,
+  images: {
+    // The container runs as a non-root user (Dockerfile), which can't write
+    // to the optimizer's .next/cache/images directory. All served images are
+    // already pre-sized static assets, so skip the runtime optimizer entirely
+    // rather than fighting cache-directory permissions or adding `sharp`.
+    unoptimized: true,
+  },
   experimental: {
     // better-sqlite3 is a native module; keep it external to the server bundle.
     serverComponentsExternalPackages: ['better-sqlite3'],

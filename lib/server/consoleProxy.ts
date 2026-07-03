@@ -83,11 +83,14 @@ export function attachConsoleProxy(server: Server) {
       return;
     }
     const cid = typeof query.cid === 'string' ? query.cid : undefined;
-    const session = takeConsoleSession(cid);
-    if (!session) {
+    const result = takeConsoleSession(cid);
+    if (!result.ok) {
+      // The single most likely silent-failure point: if this fires, bridge()
+      // (and all of its logging) is never reached at all.
+      console.error(`[console] upgrade rejected before bridging: ${result.reason}`);
       socket.destroy();
       return;
     }
-    wss.handleUpgrade(req, socket, head, (client) => bridge(client, session));
+    wss.handleUpgrade(req, socket, head, (client) => bridge(client, result.session));
   });
 }

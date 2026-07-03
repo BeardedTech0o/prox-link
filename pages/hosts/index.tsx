@@ -2,7 +2,6 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import AppBar from '@/components/AppBar';
-import BottomNav from '@/components/BottomNav';
 import Icon from '@/components/Icon';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { PageShell, CardSkeleton, ErrorState, EmptyState } from '@/components/ui';
@@ -75,7 +74,6 @@ export default function HostsPage() {
           ))}
         </div>
       </PageShell>
-      <BottomNav />
 
       <ConfirmDialog
         open={!!toDelete}

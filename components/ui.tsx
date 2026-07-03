@@ -3,7 +3,7 @@ import Icon from './Icon';
 
 export function PageShell({ children }: { children: ReactNode }) {
   return (
-    <div className="max-w-3xl mx-auto px-4 py-5 flex flex-col gap-4 animate-fade-in pb-24">
+    <div className="max-w-3xl mx-auto px-4 py-5 flex flex-col gap-4 animate-fade-in pb-24 md:pb-6">
       {children}
     </div>
   );

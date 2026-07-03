@@ -1,6 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
 import AppBar from '@/components/AppBar';
-import BottomNav from '@/components/BottomNav';
 import Icon from '@/components/Icon';
 import { PageShell, CardSkeleton, ErrorState, EmptyState } from '@/components/ui';
 import { api, pvePath } from '@/lib/client/fetcher';
@@ -76,7 +75,6 @@ export default function TasksPage() {
           })}
         </div>
       </PageShell>
-      <BottomNav />
     </>
   );
 }

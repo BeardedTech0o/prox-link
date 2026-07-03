@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import { useRouter } from 'next/router';
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -49,7 +50,17 @@ export default function LockPage() {
   }
 
   return (
-    <div className="min-h-screen grid place-items-center px-5">
+    <div className="min-h-screen flex flex-col items-center justify-center gap-6 px-5 py-8">
+      <div className="w-full max-w-sm rounded-2xl overflow-hidden shadow-card">
+        <Image
+          src="/proxlink.png"
+          alt="ProxLink"
+          width={1952}
+          height={544}
+          priority
+          className="w-full h-auto"
+        />
+      </div>
       <form
         onSubmit={submit}
         className="card w-full max-w-sm flex flex-col gap-4 animate-fade-in"

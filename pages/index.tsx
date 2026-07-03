@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import AppBar from '@/components/AppBar';
-import BottomNav from '@/components/BottomNav';
 import Icon from '@/components/Icon';
 import {
   PageShell,
@@ -33,7 +32,7 @@ function GuestCard({ g }: { g: GuestRow }) {
           <span className="text-xs text-secondary">#{g.vmid}</span>
         </div>
         <div className="text-xs text-secondary truncate">
-          {g.hostName} · {g.node} · {type.toUpperCase()} · {fmtMem(g.maxmem)}
+          {g.node} · {type.toUpperCase()} · {fmtMem(g.maxmem)}
         </div>
       </div>
       <StatusBadge status={g.status} />
@@ -87,9 +86,6 @@ export default function Dashboard() {
         {hostsQ.data && hostsQ.data.length > 0 && (
           <>
             {guestsQ.isLoading && <CardSkeleton count={4} />}
-            {guestsQ.data && guestsQ.data.guests.length === 0 && (
-              <EmptyState title="No guests found" subtitle="No VMs or containers on your hosts yet." />
-            )}
             {guestsQ.data?.errors.map((e) => (
               <div
                 key={e}
@@ -98,15 +94,30 @@ export default function Dashboard() {
                 <Icon name="warning" size={18} /> {e}
               </div>
             ))}
-            <div className="flex flex-col gap-3">
-              {guestsQ.data?.guests.map((g) => (
-                <GuestCard key={`${g.hostId}-${g.vmid}`} g={g} />
-              ))}
-            </div>
+            {guestsQ.data && (
+              <div className="flex flex-col gap-4">
+                {hostsQ.data.map((h) => {
+                  const guestsForHost = guestsQ.data!.guests.filter((g) => g.hostId === h.id);
+                  return (
+                    <section key={h.id} className="panel p-4 flex flex-col gap-3">
+                      <h2 className="stat-label">{h.name}</h2>
+                      {guestsForHost.length === 0 ? (
+                        <p className="text-sm text-secondary">No guests on this host.</p>
+                      ) : (
+                        <div className="flex flex-col gap-3">
+                          {guestsForHost.map((g) => (
+                            <GuestCard key={`${g.hostId}-${g.vmid}`} g={g} />
+                          ))}
+                        </div>
+                      )}
+                    </section>
+                  );
+                })}
+              </div>
+            )}
           </>
         )}
       </PageShell>
-      <BottomNav />
     </>
   );
 }

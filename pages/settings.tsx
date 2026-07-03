@@ -2,7 +2,6 @@ import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import AppBar from '@/components/AppBar';
-import BottomNav from '@/components/BottomNav';
 import Icon from '@/components/Icon';
 import { PageShell } from '@/components/ui';
 import {
@@ -101,7 +100,6 @@ export default function SettingsPage() {
 
         <p className="text-center text-xs text-secondary">ProxLink · v0.1.0</p>
       </PageShell>
-      <BottomNav />
     </>
   );
 }

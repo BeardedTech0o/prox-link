@@ -23,6 +23,9 @@ const store = new Map<string, ConsoleSession>();
 export function createConsoleSession(s: Omit<ConsoleSession, 'expires'>): string {
   const cid = randomBytes(24).toString('base64url');
   store.set(cid, { ...s, expires: Date.now() + TTL_MS });
+  console.error(
+    `[console] session created cid=${cid.slice(0, 10)}… mode=${s.mode} node=${s.node} vmid=${s.vmid} storeSize=${store.size}`,
+  );
   return cid;
 }
 
@@ -33,7 +36,12 @@ export type TakeSessionResult =
 export function takeConsoleSession(cid: string | undefined): TakeSessionResult {
   if (!cid) return { ok: false, reason: 'missing-cid' };
   const s = store.get(cid);
-  if (!s) return { ok: false, reason: 'not-found' };
+  if (!s) {
+    console.error(
+      `[console] lookup miss cid=${cid.slice(0, 10)}… storeSize=${store.size}`,
+    );
+    return { ok: false, reason: 'not-found' };
+  }
   store.delete(cid); // single use
   if (Date.now() > s.expires) return { ok: false, reason: 'expired' };
   return { ok: true, session: s };

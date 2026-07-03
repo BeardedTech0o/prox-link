@@ -11,16 +11,16 @@ onto Proxmox as an LXC.
 
 ## Features
 
-- 📱 Installable PWA, light/dark theme + accent picker
-- 🔐 App-lock: PIN/passphrase unlock; Proxmox tokens encrypted at rest (AES-256-GCM)
-- 🖧 Connect multiple hosts (and clusters); aggregated guest dashboard
-- ▶️ VM/LXC lifecycle: start / shutdown / reboot / stop
-- 🧰 Create VMs & containers; edit guest configuration
-- 💿 Download ISOs / templates from a URL
-- 🗂️ Snapshots (create / rollback / delete) and backups (`vzdump`)
-- 🖥️ Console: noVNC for VMs, xterm for containers (via a WebSocket proxy)
-- 🧾 Recent tasks across all hosts
-- 🛡️ OWASP-aligned: allowlisted proxy, SSRF guard, strict CSP, audit log
+- Installable PWA, light/dark theme + accent picker
+- App-lock: PIN/passphrase unlock; Proxmox tokens encrypted at rest (AES-256-GCM)
+- Connect multiple hosts (and clusters); aggregated guest dashboard
+- VM/LXC lifecycle: start / shutdown / reboot / stop
+- Create VMs & containers; edit guest configuration
+- Download ISOs / templates from a URL
+- Snapshots (create / rollback / delete) and backups (`vzdump`)
+- Console: noVNC for VMs, xterm for containers (via a WebSocket proxy)
+- Recent tasks across all hosts
+- OWASP-aligned: allowlisted proxy, SSRF guard, strict CSP, audit log
 
 ---
 

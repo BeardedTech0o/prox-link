@@ -69,9 +69,6 @@ export default function LockPage() {
           <div className="h-14 w-14 rounded-2xl bg-accent/[0.12] grid place-items-center">
             <Icon name={isSetup ? 'lock_open' : 'lock'} size={30} className="text-accent" />
           </div>
-          <h1 className="text-2xl font-bold tracking-tight">
-            {isSetup ? 'Set up ProxLink' : 'Unlock ProxLink'}
-          </h1>
           <p className="text-sm text-secondary">
             {isSetup
               ? 'Choose a PIN or passphrase. It encrypts your stored Proxmox tokens — there is no recovery if you forget it.'

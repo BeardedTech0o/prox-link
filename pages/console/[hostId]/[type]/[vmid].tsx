@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import AppBar from '@/components/AppBar';
 import Icon from '@/components/Icon';
 import { api, pvePath } from '@/lib/client/fetcher';
+import { attachMobileKeyboard } from '@/lib/client/novncKeyboard';
 import type { GuestType } from '@/lib/proxmox/endpoints';
 
 type Phase = 'connecting' | 'connected' | 'error' | 'closed';
@@ -19,10 +20,21 @@ export default function ConsolePage() {
   const vmid = Number(router.query.vmid || 0);
 
   const containerRef = useRef<HTMLDivElement>(null);
+  const keyInputRef = useRef<HTMLTextAreaElement>(null);
+  const termRef = useRef<{ focus(): void } | null>(null);
   const cleanupRef = useRef<() => void>(() => {});
   const [phase, setPhase] = useState<Phase>('connecting');
   const [error, setError] = useState('');
   const [mode, setMode] = useState<'vnc' | 'term'>('vnc');
+
+  // Neither a VNC canvas nor an xterm viewport is itself a DOM text input, so
+  // mobile browsers won't pop up their on-screen keyboard on tap alone. xterm
+  // manages its own hidden textarea internally (focusing it already invokes
+  // the keyboard); for VNC we bridge through the hidden textarea below.
+  function showKeyboard() {
+    if (mode === 'vnc') keyInputRef.current?.focus();
+    else termRef.current?.focus();
+  }
 
   useEffect(() => {
     if (!hostId || !vmid || !containerRef.current) return;
@@ -60,7 +72,20 @@ export default function ConsolePage() {
             setError('Authentication failed');
             setPhase('error');
           });
-          cleanupRef.current = () => rfb.disconnect();
+
+          const focusKeyInput = () => keyInputRef.current?.focus();
+          containerRef.current!.addEventListener('touchstart', focusKeyInput);
+          containerRef.current!.addEventListener('mousedown', focusKeyInput);
+          const detachKeyboard = keyInputRef.current
+            ? attachMobileKeyboard(rfb, keyInputRef.current)
+            : () => {};
+
+          cleanupRef.current = () => {
+            containerRef.current?.removeEventListener('touchstart', focusKeyInput);
+            containerRef.current?.removeEventListener('mousedown', focusKeyInput);
+            detachKeyboard();
+            rfb.disconnect();
+          };
         } else {
           const [{ Terminal }, { FitAddon }] = await Promise.all([
             import('@xterm/xterm'),
@@ -76,6 +101,7 @@ export default function ConsolePage() {
           term.loadAddon(fit);
           term.open(containerRef.current!);
           fit.fit();
+          termRef.current = term;
 
           const ws = new WebSocket(wsUrl(conn.cid));
           ws.binaryType = 'arraybuffer';
@@ -126,6 +152,31 @@ export default function ConsolePage() {
       />
       <div className="flex-1 relative bg-black">
         <div ref={containerRef} className="absolute inset-0 overflow-hidden" />
+        {/* Off-screen but focusable: gives mobile browsers something to pop
+            the on-screen keyboard up for when driving a VNC session (a
+            canvas has no text input of its own). Keystrokes typed here are
+            forwarded to the RFB session, not kept in the textarea. */}
+        <textarea
+          ref={keyInputRef}
+          aria-hidden="true"
+          tabIndex={-1}
+          autoCapitalize="off"
+          autoCorrect="off"
+          autoComplete="off"
+          spellCheck={false}
+          className="absolute bottom-0 right-0 h-px w-px opacity-0 pointer-events-none resize-none"
+          style={{ fontSize: 16 }}
+        />
+        {phase === 'connected' && (
+          <button
+            type="button"
+            onClick={showKeyboard}
+            aria-label="Show keyboard"
+            className="absolute bottom-4 right-4 h-12 w-12 rounded-full bg-black/60 text-white grid place-items-center backdrop-blur-sm active:scale-95 transition-transform"
+          >
+            <Icon name="keyboard" size={22} />
+          </button>
+        )}
         {phase !== 'connected' && (
           <div className="absolute inset-0 grid place-items-center text-white/80 pointer-events-none">
             <div className="flex flex-col items-center gap-2">

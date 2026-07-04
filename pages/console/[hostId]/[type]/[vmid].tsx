@@ -19,6 +19,7 @@ export default function ConsolePage() {
   const type = String(router.query.type || 'qemu') as GuestType;
   const vmid = Number(router.query.vmid || 0);
 
+  const rootRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const keyInputRef = useRef<HTMLTextAreaElement>(null);
   const termRef = useRef<{ focus(): void } | null>(null);
@@ -31,10 +32,39 @@ export default function ConsolePage() {
   // mobile browsers won't pop up their on-screen keyboard on tap alone. xterm
   // manages its own hidden textarea internally (focusing it already invokes
   // the keyboard); for VNC we bridge through the hidden textarea below.
+  // preventScroll stops the browser from scrolling the page to reveal the
+  // (invisible, off-screen) target of the focus — without it, focusing
+  // either target shoves the whole page around as soon as the keyboard opens.
   function showKeyboard() {
-    if (mode === 'vnc') keyInputRef.current?.focus();
+    if (mode === 'vnc') keyInputRef.current?.focus({ preventScroll: true });
     else termRef.current?.focus();
   }
+
+  // The layout viewport (100vh/min-h-screen) doesn't shrink when a mobile
+  // on-screen keyboard opens — only window.visualViewport does. Without this,
+  // the browser instead scrolls the fixed-height page to keep the focused
+  // (off-screen) keyboard-trigger element "in view", which drags the whole
+  // console out from under the visible area. Track visualViewport directly
+  // and size the root to it, so the console always fits above the keyboard.
+  useEffect(() => {
+    const root = rootRef.current;
+    const vv = typeof window !== 'undefined' ? window.visualViewport : null;
+    if (!root || !vv) return;
+    const update = () => {
+      root.style.height = `${vv.height}px`;
+      root.style.top = `${vv.offsetTop}px`;
+      // Reuses xterm's existing window-resize-driven fit() call; RFB's own
+      // ResizeObserver picks up the container's new size independently.
+      window.dispatchEvent(new Event('resize'));
+    };
+    update();
+    vv.addEventListener('resize', update);
+    vv.addEventListener('scroll', update);
+    return () => {
+      vv.removeEventListener('resize', update);
+      vv.removeEventListener('scroll', update);
+    };
+  }, []);
 
   useEffect(() => {
     if (!hostId || !vmid || !containerRef.current) return;
@@ -73,7 +103,7 @@ export default function ConsolePage() {
             setPhase('error');
           });
 
-          const focusKeyInput = () => keyInputRef.current?.focus();
+          const focusKeyInput = () => keyInputRef.current?.focus({ preventScroll: true });
           containerRef.current!.addEventListener('touchstart', focusKeyInput);
           containerRef.current!.addEventListener('mousedown', focusKeyInput);
           const detachKeyboard = keyInputRef.current
@@ -144,7 +174,7 @@ export default function ConsolePage() {
   }, [hostId, type, vmid]);
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div ref={rootRef} className="fixed inset-0 h-screen flex flex-col">
       <AppBar
         title="Console"
         subtitle={`${type.toUpperCase()} · #${vmid}`}

@@ -4,7 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import AppBar from '@/components/AppBar';
 import Icon from '@/components/Icon';
 import { PageShell, Spinner } from '@/components/ui';
-import { api, pvePath } from '@/lib/client/fetcher';
+import { api, ApiError, pvePath } from '@/lib/client/fetcher';
 import { useHosts } from '@/lib/client/hooks';
 import type { GuestType } from '@/lib/proxmox/endpoints';
 
@@ -113,6 +113,14 @@ export default function CreatePage() {
   useEffect(() => {
     if (imageStores.length && !isoStore) setIsoStore(imageStores[0].storage);
   }, [imageStores, isoStore]);
+
+  // Proxmox rejects download-url with a bare "Parameter verification failed"
+  // (no detail shown anywhere in the UI) if the filename's extension doesn't
+  // match its content type — validate client-side so the user gets an
+  // actionable message instead of a round trip to find out.
+  const isoExtHint = type === 'qemu' ? '.iso or .img' : '.tar.gz, .tar.xz, .tar.zst, or .tgz';
+  const isoExtRe = type === 'qemu' ? /\.(iso|img)$/i : /\.(tar\.gz|tar\.xz|tar\.zst|tgz)$/i;
+  const isoNameValid = !isoName || isoExtRe.test(isoName);
 
   const isoDownload = useMutation({
     mutationFn: () =>
@@ -299,11 +307,20 @@ export default function CreatePage() {
                     </select>
                     <input className={inputCls} placeholder="https://…/image.iso" value={isoUrl} onChange={(e) => setIsoUrl(e.target.value)} />
                     <input className={inputCls} placeholder="filename (e.g. debian-12.iso)" value={isoName} onChange={(e) => setIsoName(e.target.value)} />
-                    {isoDownload.isError && <p className="text-sm text-danger">{(isoDownload.error as Error).message}</p>}
+                    {!isoNameValid && (
+                      <p className="text-sm text-warning">Filename must end in {isoExtHint}</p>
+                    )}
+                    {isoDownload.isError && (
+                      <p className="text-sm text-danger">
+                        {(isoDownload.error as ApiError).fieldErrors
+                          ? Object.values((isoDownload.error as ApiError).fieldErrors!).join('; ')
+                          : (isoDownload.error as Error).message}
+                      </p>
+                    )}
                     {isoDownload.isSuccess && <p className="text-sm text-success">Download started — check Tasks.</p>}
                     <button
                       onClick={() => isoDownload.mutate()}
-                      disabled={!isoUrl || !isoName || !isoStore || isoDownload.isPending}
+                      disabled={!isoUrl || !isoName || !isoStore || !isoNameValid || isoDownload.isPending}
                       className="px-4 py-2 rounded-xl bg-elevated text-sm font-medium hover:bg-border/40 transition-colors disabled:opacity-40 flex items-center gap-2 w-fit"
                     >
                       {isoDownload.isPending && <Spinner size={16} />} Start download

@@ -109,10 +109,26 @@ export default function CreatePage() {
   // ISO-from-URL helper
   const [isoUrl, setIsoUrl] = useState('');
   const [isoName, setIsoName] = useState('');
+  const [isoNameTouched, setIsoNameTouched] = useState(false);
   const [isoStore, setIsoStore] = useState('');
   useEffect(() => {
     if (imageStores.length && !isoStore) setIsoStore(imageStores[0].storage);
   }, [imageStores, isoStore]);
+
+  // The URL's own filename almost always already has the right extension —
+  // derive it automatically so the user isn't required to retype it (and
+  // isn't left with a mismatched, unexplained "wrong extension" rejection
+  // from a filename they never meant to type from scratch). Only autofills
+  // while the user hasn't typed into the filename field themselves.
+  useEffect(() => {
+    if (isoNameTouched || !isoUrl) return;
+    try {
+      const base = decodeURIComponent(new URL(isoUrl).pathname.split('/').pop() || '');
+      if (base) setIsoName(base);
+    } catch {
+      // Not a complete/valid URL yet — leave the filename alone.
+    }
+  }, [isoUrl, isoNameTouched]);
 
   // Proxmox rejects download-url with a bare "Parameter verification failed"
   // (no detail shown anywhere in the UI) if the filename's extension doesn't
@@ -131,6 +147,7 @@ export default function CreatePage() {
     onSuccess: () => {
       setIsoUrl('');
       setIsoName('');
+      setIsoNameTouched(false);
       qc.invalidateQueries({ queryKey: ['tasks'] });
     },
   });
@@ -306,7 +323,15 @@ export default function CreatePage() {
                       ))}
                     </select>
                     <input className={inputCls} placeholder="https://…/image.iso" value={isoUrl} onChange={(e) => setIsoUrl(e.target.value)} />
-                    <input className={inputCls} placeholder="filename (e.g. debian-12.iso)" value={isoName} onChange={(e) => setIsoName(e.target.value)} />
+                    <input
+                      className={inputCls}
+                      placeholder="filename (e.g. debian-12.iso)"
+                      value={isoName}
+                      onChange={(e) => {
+                        setIsoName(e.target.value);
+                        setIsoNameTouched(true);
+                      }}
+                    />
                     {!isoNameValid && (
                       <p className="text-sm text-warning">Filename must end in {isoExtHint}</p>
                     )}

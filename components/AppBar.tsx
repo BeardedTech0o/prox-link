@@ -30,7 +30,7 @@ export default function AppBar({ title, subtitle, back, actions }: AppBarProps) 
   }
 
   return (
-    <header className="sticky top-0 z-20 bg-base/80 backdrop-blur-md border-b border-border">
+    <header className="sticky top-0 z-20 bg-base/80 backdrop-blur-md border-b border-border pt-[env(safe-area-inset-top)]">
       <div className="max-w-3xl mx-auto px-4 py-3 flex items-center gap-3">
         {back && (
           <button

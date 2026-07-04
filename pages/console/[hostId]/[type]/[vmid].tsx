@@ -4,6 +4,7 @@ import AppBar from '@/components/AppBar';
 import Icon from '@/components/Icon';
 import { api, pvePath } from '@/lib/client/fetcher';
 import { attachMobileKeyboard } from '@/lib/client/novncKeyboard';
+import { attachCoverScale } from '@/lib/client/novncScale';
 import type { GuestType } from '@/lib/proxmox/endpoints';
 
 type Phase = 'connecting' | 'connected' | 'error' | 'closed';
@@ -109,11 +110,13 @@ export default function ConsolePage() {
           const detachKeyboard = keyInputRef.current
             ? attachMobileKeyboard(rfb, keyInputRef.current)
             : () => {};
+          const detachCoverScale = attachCoverScale(rfb, containerRef.current!);
 
           cleanupRef.current = () => {
             containerRef.current?.removeEventListener('touchstart', focusKeyInput);
             containerRef.current?.removeEventListener('mousedown', focusKeyInput);
             detachKeyboard();
+            detachCoverScale();
             rfb.disconnect();
           };
         } else {

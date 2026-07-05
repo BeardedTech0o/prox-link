@@ -82,7 +82,7 @@ export function StatusBadge({ status }: { status?: string }) {
   const cls = STATUS_STYLES[s] || 'bg-elevated text-secondary border-border';
   return (
     <span
-      className={`px-2.5 py-0.5 rounded-full text-xs font-medium border ${cls}`}
+      className={`px-2.5 py-0.5 rounded-full text-xs font-medium border shrink-0 whitespace-nowrap ${cls}`}
     >
       {s}
     </span>

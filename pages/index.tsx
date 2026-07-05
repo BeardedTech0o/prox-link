@@ -21,15 +21,15 @@ function GuestCard({ g }: { g: GuestRow }) {
   return (
     <Link
       href={`/guest/${g.hostId}/${type}/${g.vmid}`}
-      className="card flex items-center gap-3 hover:shadow-card-hover transition-shadow"
+      className="card flex items-center gap-3 hover:shadow-card-hover transition-shadow min-w-0"
     >
-      <div className="h-10 w-10 rounded-xl bg-accent/[0.12] grid place-items-center">
+      <div className="h-10 w-10 rounded-xl bg-accent/[0.12] grid place-items-center shrink-0">
         <Icon name={type === 'lxc' ? 'deployed_code' : 'computer'} className="text-accent" />
       </div>
-      <div className="min-w-0 flex-1">
+      <div className="min-w-0 flex-1 overflow-hidden">
         <div className="flex items-center gap-2">
           <span className="font-semibold truncate">{g.name || `#${g.vmid}`}</span>
-          <span className="text-xs text-secondary">#{g.vmid}</span>
+          <span className="text-xs text-secondary shrink-0">#{g.vmid}</span>
         </div>
         <div className="text-xs text-secondary truncate">
           {g.node} · {type.toUpperCase()} · {fmtMem(g.maxmem)}

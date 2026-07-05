@@ -37,6 +37,11 @@ html.dark {
 
 html {
   scrollbar-gutter: stable;
+  /* Backstop against any flex/text-truncation sizing quirk (observed on
+     Safari/iOS, not reproducible in Chromium) letting a row grow wider than
+     the viewport — that used to require a pinch-zoom to reach the cut-off
+     edge; now it's just silently clipped instead. */
+  overflow-x: hidden;
 }
 * {
   box-sizing: border-box;
@@ -55,6 +60,7 @@ body {
     ),
     radial-gradient(ellipse at 82% 100%, rgb(var(--c-accent) / 0.03) 0%, transparent 45%);
   min-height: 100vh;
+  overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
 }
 

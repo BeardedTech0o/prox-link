@@ -98,3 +98,22 @@ export function Spinner({ size = 18 }: { size?: number }) {
     />
   );
 }
+
+// Proxmox doesn't report a numeric percentage for most tasks (qmcreate,
+// download-url, ...), so this shows an indeterminate bar — still gives clear
+// "this is actively working" feedback — alongside the task's latest log line
+// as a stage description, which is the only real progress signal PVE gives us.
+export function TaskProgress({ stage }: { stage: string }) {
+  return (
+    <div className="flex flex-col gap-2" role="status" aria-live="polite">
+      <div
+        className="h-2 w-full rounded-full bg-elevated overflow-hidden"
+        role="progressbar"
+        aria-valuetext={stage}
+      >
+        <div className="h-full w-1/3 rounded-full bg-accent animate-progress-indeterminate" />
+      </div>
+      <p className="text-sm text-secondary truncate">{stage}</p>
+    </div>
+  );
+}

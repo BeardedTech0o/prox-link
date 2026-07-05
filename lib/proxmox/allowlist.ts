@@ -26,6 +26,7 @@ const RULES: Rule[] = [
   { method: 'GET', pattern: re(`^/nodes/${NODE}/storage/${STORE}/content$`) },
   { method: 'GET', pattern: re(`^/nodes/${NODE}/tasks$`) },
   { method: 'GET', pattern: re(`^/nodes/${NODE}/tasks/[^/]+/status$`) },
+  { method: 'GET', pattern: re(`^/nodes/${NODE}/tasks/[^/]+/log$`) },
   // lifecycle
   {
     method: 'POST',

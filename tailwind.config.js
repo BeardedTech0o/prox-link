@@ -48,10 +48,15 @@ module.exports = {
         spin: {
           to: { transform: 'rotate(360deg)' },
         },
+        'progress-indeterminate': {
+          '0%': { transform: 'translateX(-100%)' },
+          '100%': { transform: 'translateX(350%)' },
+        },
       },
       animation: {
         'slide-in': 'slide-in 0.15s ease-out',
         'fade-in': 'fade-in  0.2s  ease-out',
+        'progress-indeterminate': 'progress-indeterminate 1.1s ease-in-out infinite',
       },
     },
   },

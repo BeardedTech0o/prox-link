@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import AppBar from '@/components/AppBar';
 import Icon from '@/components/Icon';
-import { PageShell, Spinner } from '@/components/ui';
+import { PageShell, Spinner, TaskProgress } from '@/components/ui';
 import { api, ApiError, pvePath } from '@/lib/client/fetcher';
 import { useHosts } from '@/lib/client/hooks';
 import type { GuestType } from '@/lib/proxmox/endpoints';
@@ -138,18 +138,69 @@ export default function CreatePage() {
   const isoExtRe = type === 'qemu' ? /\.(iso|img)$/i : /\.(tar\.gz|tar\.xz|tar\.zst|tgz)$/i;
   const isoNameValid = !isoName || isoExtRe.test(isoName);
 
-  const isoDownload = useMutation({
-    mutationFn: () =>
-      api(pvePath(hostId, `/nodes/${node}/storage/${isoStore}/download-url`), {
-        method: 'POST',
-        body: JSON.stringify({ content: imageContent, url: isoUrl, filename: isoName }),
-      }),
-    onSuccess: () => {
+  // Both the ISO download and the guest create call kick off an async PVE
+  // task (returned as a UPID) rather than finishing inline. Track whichever
+  // one is in flight and poll it for a stage-by-stage progress display —
+  // Proxmox doesn't report a numeric percentage for either, so the task's
+  // own log tail is the only real signal of "what's happening right now".
+  const [activeTask, setActiveTask] = useState<{
+    node: string;
+    upid: string;
+    kind: 'iso' | 'create';
+  } | null>(null);
+
+  const taskProgressQ = useQuery({
+    enabled: !!activeTask,
+    queryKey: ['create-task-progress', hostId, activeTask?.upid],
+    refetchInterval: (q) => (q.state.data?.running === false ? false : 1200),
+    queryFn: async () => {
+      const { node: taskNode, upid } = activeTask!;
+      const [statusRes, logRes] = await Promise.all([
+        api<{ data: { status: string; exitstatus?: string } }>(
+          pvePath(hostId, `/nodes/${taskNode}/tasks/${encodeURIComponent(upid)}/status`),
+        ),
+        api<{ data: { n: number; t: string }[] }>(
+          pvePath(hostId, `/nodes/${taskNode}/tasks/${encodeURIComponent(upid)}/log`),
+        ).catch(() => ({ data: [] as { n: number; t: string }[] })),
+      ]);
+      const running = statusRes.data.status === 'running';
+      const lines = logRes.data || [];
+      const lastLine = lines.length ? lines[lines.length - 1].t : '';
+      return {
+        running,
+        ok: !running && (!statusRes.data.exitstatus || statusRes.data.exitstatus === 'OK'),
+        stage: lastLine || (running ? 'Working…' : ''),
+      };
+    },
+  });
+  const taskRunning = !!activeTask && taskProgressQ.data?.running !== false;
+  const taskFailed = !!activeTask && taskProgressQ.data?.running === false && !taskProgressQ.data.ok;
+
+  useEffect(() => {
+    if (!activeTask || !taskProgressQ.data || taskProgressQ.data.running || !taskProgressQ.data.ok) {
+      return;
+    }
+    if (activeTask.kind === 'iso') {
       setIsoUrl('');
       setIsoName('');
       setIsoNameTouched(false);
+      qc.invalidateQueries({ queryKey: ['content'] });
       qc.invalidateQueries({ queryKey: ['tasks'] });
-    },
+      setActiveTask(null);
+    } else {
+      qc.invalidateQueries({ queryKey: ['guests'] });
+      router.push(`/guest/${hostId}/${type}/${vmid}`);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [taskProgressQ.data, activeTask]);
+
+  const isoDownload = useMutation({
+    mutationFn: () =>
+      api<{ data: string }>(pvePath(hostId, `/nodes/${node}/storage/${isoStore}/download-url`), {
+        method: 'POST',
+        body: JSON.stringify({ content: imageContent, url: isoUrl, filename: isoName }),
+      }),
+    onSuccess: (res) => setActiveTask({ node, upid: res.data, kind: 'iso' }),
   });
 
   const create = useMutation({
@@ -168,7 +219,7 @@ export default function CreatePage() {
           ostype: 'l26',
         };
         if (image) body.ide2 = `${image},media=cdrom`;
-        return api(pvePath(hostId, `/nodes/${node}/qemu`), {
+        return api<{ data: string }>(pvePath(hostId, `/nodes/${node}/qemu`), {
           method: 'POST',
           body: JSON.stringify(body),
         });
@@ -184,15 +235,14 @@ export default function CreatePage() {
         password: password || undefined,
         unprivileged: 1,
       };
-      return api(pvePath(hostId, `/nodes/${node}/lxc`), {
+      return api<{ data: string }>(pvePath(hostId, `/nodes/${node}/lxc`), {
         method: 'POST',
         body: JSON.stringify(body),
       });
     },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['guests'] });
+    onSuccess: (res) => {
       qc.invalidateQueries({ queryKey: ['tasks'] });
-      router.push('/');
+      setActiveTask({ node, upid: res.data, kind: 'create' });
     },
   });
 
@@ -342,26 +392,47 @@ export default function CreatePage() {
                           : (isoDownload.error as Error).message}
                       </p>
                     )}
-                    {isoDownload.isSuccess && <p className="text-sm text-success">Download started — check Tasks.</p>}
-                    <button
-                      onClick={() => isoDownload.mutate()}
-                      disabled={!isoUrl || !isoName || !isoStore || !isoNameValid || isoDownload.isPending}
-                      className="px-4 py-2 rounded-xl bg-elevated text-sm font-medium hover:bg-border/40 transition-colors disabled:opacity-40 flex items-center gap-2 w-fit"
-                    >
-                      {isoDownload.isPending && <Spinner size={16} />} Start download
-                    </button>
+                    {activeTask?.kind === 'iso' ? (
+                      taskFailed ? (
+                        <TaskFailure
+                          stage={taskProgressQ.data?.stage}
+                          onDismiss={() => setActiveTask(null)}
+                        />
+                      ) : (
+                        <TaskProgress stage={taskProgressQ.data?.stage ?? 'Starting download…'} />
+                      )
+                    ) : (
+                      <button
+                        onClick={() => isoDownload.mutate()}
+                        disabled={!isoUrl || !isoName || !isoStore || !isoNameValid || isoDownload.isPending || taskRunning}
+                        className="px-4 py-2 rounded-xl bg-elevated text-sm font-medium hover:bg-border/40 transition-colors disabled:opacity-40 flex items-center gap-2 w-fit"
+                      >
+                        {isoDownload.isPending && <Spinner size={16} />} Start download
+                      </button>
+                    )}
                   </div>
                 </details>
               )}
 
               {create.isError && <p className="text-sm text-danger">{(create.error as Error).message}</p>}
-              <button
-                onClick={() => create.mutate()}
-                disabled={!canCreate || create.isPending}
-                className="px-4 py-2.5 rounded-xl bg-accent text-white text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-40 flex items-center justify-center gap-2"
-              >
-                {create.isPending && <Spinner size={16} />} Create {type === 'qemu' ? 'VM' : 'container'}
-              </button>
+              {activeTask?.kind === 'create' ? (
+                taskFailed ? (
+                  <TaskFailure
+                    stage={taskProgressQ.data?.stage}
+                    onDismiss={() => setActiveTask(null)}
+                  />
+                ) : (
+                  <TaskProgress stage={taskProgressQ.data?.stage ?? 'Starting…'} />
+                )
+              ) : (
+                <button
+                  onClick={() => create.mutate()}
+                  disabled={!canCreate || create.isPending || taskRunning}
+                  className="px-4 py-2.5 rounded-xl bg-accent text-white text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-40 flex items-center justify-center gap-2"
+                >
+                  {create.isPending && <Spinner size={16} />} Create {type === 'qemu' ? 'VM' : 'container'}
+                </button>
+              )}
             </>
           )}
         </div>
@@ -376,6 +447,20 @@ function Field({ label, hint, children }: { label: string; hint?: string; childr
       <label className="text-sm font-medium">{label}</label>
       {children}
       {hint && <p className="text-xs text-secondary">{hint}</p>}
+    </div>
+  );
+}
+
+function TaskFailure({ stage, onDismiss }: { stage?: string; onDismiss: () => void }) {
+  return (
+    <div className="flex flex-col gap-2 rounded-xl border border-danger/20 bg-danger/10 p-3">
+      <p className="text-sm text-danger">{stage || 'The task failed.'}</p>
+      <button
+        onClick={onDismiss}
+        className="px-3 py-1.5 rounded-xl bg-elevated text-sm font-medium hover:bg-border/40 transition-colors w-fit"
+      >
+        Dismiss
+      </button>
     </div>
   );
 }

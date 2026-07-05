@@ -14,6 +14,12 @@ describe('PVE proxy allowlist (A01)', () => {
     expect(isAllowed('POST', '/nodes/pve1/lxc')).toBe(true);
   });
 
+  it('allows polling a task\'s status and log by UPID', () => {
+    const upid = 'UPID:pve1:00001234:0000ABCD:00000000:qmcreate:100:root@pam:';
+    expect(isAllowed('GET', `/nodes/pve1/tasks/${encodeURIComponent(upid)}/status`)).toBe(true);
+    expect(isAllowed('GET', `/nodes/pve1/tasks/${encodeURIComponent(upid)}/log`)).toBe(true);
+  });
+
   it('rejects unlisted or mismatched method/path pairs', () => {
     expect(isAllowed('GET', '/access/users')).toBe(false);
     expect(isAllowed('POST', '/nodes/pve1/qemu/100')).toBe(false); // not a create path

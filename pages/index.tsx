@@ -21,13 +21,19 @@ function GuestCard({ g }: { g: GuestRow }) {
   return (
     <Link
       href={`/guest/${g.hostId}/${type}/${g.vmid}`}
-      className="card flex items-center gap-3 hover:shadow-card-hover transition-shadow min-w-0"
+      // Grid instead of flex here: the middle column's minmax(0, 1fr) gives an
+      // explicit, unambiguous minimum width for the truncating text block.
+      // Flexbox's equivalent relies on each browser correctly overriding a
+      // flex item's default min-width:auto — Safari/iOS doesn't always agree
+      // with Chromium on that, which was letting this row render wider than
+      // the screen instead of truncating the guest name.
+      className="card grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 hover:shadow-card-hover transition-shadow"
     >
-      <div className="h-10 w-10 rounded-xl bg-accent/[0.12] grid place-items-center shrink-0">
+      <div className="h-10 w-10 rounded-xl bg-accent/[0.12] grid place-items-center">
         <Icon name={type === 'lxc' ? 'deployed_code' : 'computer'} className="text-accent" />
       </div>
-      <div className="min-w-0 flex-1 overflow-hidden">
-        <div className="flex items-center gap-2">
+      <div className="min-w-0 overflow-hidden">
+        <div className="flex items-center gap-2 min-w-0">
           <span className="font-semibold truncate">{g.name || `#${g.vmid}`}</span>
           <span className="text-xs text-secondary shrink-0">#{g.vmid}</span>
         </div>

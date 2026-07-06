@@ -55,19 +55,19 @@ export default function TasksPage() {
             const ok = t.status === 'OK' || t.status === undefined;
             const running = !t.endtime;
             return (
-              <div key={t.upid} className="card !p-3 flex items-center gap-3">
+              <div key={t.upid} className="card !p-3 grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3">
                 <Icon
                   name={running ? 'progress_activity' : ok ? 'check_circle' : 'error'}
                   size={20}
                   className={`${running ? 'text-accent animate-[spin_1s_linear_infinite]' : ok ? 'text-success' : 'text-danger'}`}
                 />
-                <div className="min-w-0 flex-1">
+                <div className="min-w-0 overflow-hidden">
                   <div className="text-sm font-medium truncate">{t.type}</div>
                   <div className="text-xs text-secondary truncate">
                     {t.hostName} · {t.node} · {t.user}
                   </div>
                 </div>
-                <div className="text-xs text-secondary">
+                <div className="text-xs text-secondary whitespace-nowrap">
                   {new Date(t.starttime * 1000).toLocaleTimeString()}
                 </div>
               </div>

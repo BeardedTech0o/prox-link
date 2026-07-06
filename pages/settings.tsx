@@ -98,7 +98,12 @@ export default function SettingsPage() {
           </button>
         </section>
 
-        <p className="text-center text-xs text-secondary">ProxLink · v0.1.0</p>
+        <p className="text-center text-xs text-secondary">
+          ProxLink · v0.1.0
+          {process.env.NEXT_PUBLIC_BUILD_TIME && (
+            <> · Built {new Date(process.env.NEXT_PUBLIC_BUILD_TIME).toLocaleString()}</>
+          )}
+        </p>
       </PageShell>
     </>
   );

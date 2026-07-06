@@ -35,6 +35,13 @@ const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
   productionBrowserSourceMaps: false,
+  env: {
+    // Baked in at `next build` time (the Dockerfile runs this fresh on every
+    // `docker compose up -d --build`), so Settings can show which build is
+    // actually running — the only reliable way to confirm a deploy actually
+    // picked up new code, short of diffing bundle hashes by hand.
+    NEXT_PUBLIC_BUILD_TIME: new Date().toISOString(),
+  },
   images: {
     // The container runs as a non-root user (Dockerfile), which can't write
     // to the optimizer's .next/cache/images directory. All served images are

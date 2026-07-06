@@ -6,7 +6,6 @@ import '@/styles/globals.css';
 import '@xterm/xterm/css/xterm.css';
 import LockGuard from '@/components/LockGuard';
 import AppShell from '@/components/AppShell';
-import ViewportDebug from '@/components/ViewportDebug';
 
 export default function App({ Component, pageProps }: AppProps) {
   const [client] = useState(
@@ -34,7 +33,6 @@ export default function App({ Component, pageProps }: AppProps) {
           <Component {...pageProps} />
         </AppShell>
       </LockGuard>
-      <ViewportDebug />
     </QueryClientProvider>
   );
 }

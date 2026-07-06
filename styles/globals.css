@@ -64,6 +64,22 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* iOS Safari auto-zooms the page when a focused text input's computed
+   font-size is under 16px — every text input/select in this app uses
+   Tailwind's text-sm (14px), and the PIN field on /lock even autofocuses
+   on load, so this fired on literally every session before the user
+   touched anything. The zoom then persists across client-side navigation,
+   which is what actually caused the "every page is cut off" reports —
+   not a layout/overflow bug. Force 16px on mobile widths only, so desktop
+   keeps its smaller, denser look (this bug doesn't exist there anyway). */
+@media (max-width: 767px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
 @layer components {
   .card {
     @apply bg-surface rounded-2xl shadow-card p-5;

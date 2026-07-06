@@ -37,11 +37,11 @@ html.dark {
 
 html {
   scrollbar-gutter: stable;
-  /* Backstop against any flex/text-truncation sizing quirk (observed on
-     Safari/iOS, not reproducible in Chromium) letting a row grow wider than
-     the viewport — that used to require a pinch-zoom to reach the cut-off
-     edge; now it's just silently clipped instead. */
-  overflow-x: hidden;
+  /* NOTE: deliberately not setting overflow-x:hidden here (only on body,
+     below) — iOS Safari has documented cases where overflow-x:hidden on the
+     html element itself interferes with how it resolves width=device-width
+     in the viewport meta tag, which would explain a page-wide cut-off that
+     no per-component CSS fix could ever touch. */
 }
 * {
   box-sizing: border-box;

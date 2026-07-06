@@ -139,4 +139,10 @@ export const pve = {
 
   termproxy: (h: PveHost, node: string, t: GuestType, vmid: number) =>
     pveRequest(h, `/nodes/${node}/${t}/${vmid}/termproxy`, { method: 'POST' }),
+
+  // Shell on the node itself (not a guest) — Proxmox's "Datacenter > Node >
+  // Shell". Always a terminal session; there's no VNC/framebuffer equivalent
+  // for a bare node.
+  nodeTermProxy: (h: PveHost, node: string) =>
+    pveRequest(h, `/nodes/${node}/termproxy`, { method: 'POST' }),
 };

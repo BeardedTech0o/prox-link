@@ -25,13 +25,17 @@ function upstreamAgent(s: ConsoleSession): https.Agent {
 function upstreamUrl(s: ConsoleSession): string {
   const base = new URL(s.host.baseUrl.replace(/\/$/, ''));
   const proto = base.protocol === 'http:' ? 'ws:' : 'wss:';
-  const path = `/api2/json/nodes/${s.node}/${s.type}/${s.vmid}/vncwebsocket`;
+  const path =
+    s.kind === 'guest'
+      ? `/api2/json/nodes/${s.node}/${s.type}/${s.vmid}/vncwebsocket`
+      : `/api2/json/nodes/${s.node}/vncwebsocket`;
   const qs = `port=${encodeURIComponent(s.port)}&vncticket=${encodeURIComponent(s.ticket)}`;
   return `${proto}//${base.host}${path}?${qs}`;
 }
 
 function bridge(client: WebSocket, s: ConsoleSession) {
-  const tag = `[console] ${s.mode} node=${s.node} vmid=${s.vmid}`;
+  const target = s.kind === 'guest' ? `vmid=${s.vmid}` : 'node-shell';
+  const tag = `[console] ${s.mode} node=${s.node} ${target}`;
   const upstream = new WebSocket(upstreamUrl(s), ['binary'], {
     agent: upstreamAgent(s),
     headers: { Authorization: `PVEAPIToken=${s.host.tokenId}=${s.host.secret}` },

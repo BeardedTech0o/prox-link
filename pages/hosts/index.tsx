@@ -54,11 +54,11 @@ export default function HostsPage() {
         )}
         <div className="flex flex-col gap-3">
           {hostsQ.data?.map((h) => (
-            <div key={h.id} className="card flex items-center gap-3">
+            <div key={h.id} className="card grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3">
               <div className="h-10 w-10 rounded-xl bg-accent/[0.12] grid place-items-center">
                 <Icon name="dns" className="text-accent" />
               </div>
-              <div className="min-w-0 flex-1">
+              <div className="min-w-0 overflow-hidden">
                 <div className="font-semibold truncate">{h.name}</div>
                 <div className="text-xs text-secondary truncate">{h.baseUrl}</div>
                 <div className="text-xs text-secondary truncate font-mono">{h.tokenId}</div>

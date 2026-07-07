@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: ['claude/proxmox-mobile-app-fomguw', main]
+    branches: [main]
   pull_request:
 
 jobs:

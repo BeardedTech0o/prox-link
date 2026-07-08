@@ -32,7 +32,7 @@ function HostRow({ h, onDelete }: { h: PublicHost; onDelete: (h: PublicHost) => 
   return (
     <div className="card flex flex-col gap-3">
       <div className="grid grid-cols-[auto_minmax(0,1fr)_auto_auto] items-center gap-3">
-        <div className="h-10 w-10 rounded-xl bg-accent/[0.12] grid place-items-center">
+        <div className="h-10 w-10 rounded-2xl bg-accent/[0.12] grid place-items-center">
           <Icon name="dns" className="text-accent" />
         </div>
         <div className="min-w-0 overflow-hidden">
@@ -115,7 +115,7 @@ export default function HostsPage() {
             action={
               <Link
                 href="/hosts/new"
-                className="px-4 py-2 rounded-xl bg-accent text-white text-sm font-medium hover:opacity-90 transition-opacity"
+                className="px-4 py-2 rounded-2xl bg-accent text-gray-950 text-sm font-medium hover:opacity-90 transition-opacity"
               >
                 Add a host
               </Link>

@@ -120,7 +120,7 @@ export default function Snapshots({
             <button
               onClick={() => create.mutate()}
               disabled={!name || create.isPending}
-              className="px-4 py-2 rounded-xl bg-accent text-white text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-40 flex items-center gap-2"
+              className="px-4 py-2 rounded-2xl bg-accent text-gray-950 text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-40 flex items-center gap-2"
             >
               {create.isPending && <Spinner size={16} />} Create
             </button>

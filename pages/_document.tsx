@@ -11,13 +11,14 @@ export default function Document() {
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <link rel="icon" href="/icons/icon-192.png" type="image/png" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-        <meta name="theme-color" content="#8b5cf6" />
+        <meta name="theme-color" content="#0c0c09" media="(prefers-color-scheme: dark)" />
+        <meta name="theme-color" content="#eaf2f3" media="(prefers-color-scheme: light)" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta
           name="apple-mobile-web-app-status-bar-style"
           content="black-translucent"
         />
-        {/* Inter + JetBrains Mono. Material Symbols is self-hosted (public/fonts)
+        {/* Poppins + JetBrains Mono. Material Symbols is self-hosted (public/fonts)
             so icons never depend on reaching Google's CDN — see styles/globals.css. */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
@@ -26,7 +27,7 @@ export default function Document() {
           crossOrigin="anonymous"
         />
         <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
           rel="stylesheet"
         />
       </Head>

@@ -28,11 +28,11 @@ module.exports = {
         },
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
+        sans: ['Poppins', 'system-ui', 'sans-serif'],
         mono: ['JetBrains Mono', 'Fira Code', 'Consolas', 'monospace'],
       },
       boxShadow: {
-        card: '0 2px 8px 0 rgba(0,0,0,0.06), 0 0 1px 0 rgba(0,0,0,0.04)',
+        card: '0 1px 2px 0 rgba(16,24,40,0.04), 0 6px 20px -4px rgba(16,24,40,0.06)',
         'card-hover': '0 4px 16px rgba(0,0,0,0.12), 0 0 0 1px rgb(var(--c-accent) / 0.3)',
         glow: '0 0 20px rgb(var(--c-accent) / 0.25)',
       },

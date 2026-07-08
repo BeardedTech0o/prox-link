@@ -107,7 +107,7 @@ export default function LockPage() {
         <button
           type="submit"
           disabled={busy || !pin || (data?.lockedForMs ?? 0) > 0}
-          className="px-4 py-2.5 rounded-xl bg-accent text-white text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-40 flex items-center justify-center gap-2"
+          className="px-4 py-2.5 rounded-2xl bg-accent text-gray-950 text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-40 flex items-center justify-center gap-2"
         >
           {busy && <Spinner size={16} />}
           {isSetup ? 'Create & continue' : 'Unlock'}

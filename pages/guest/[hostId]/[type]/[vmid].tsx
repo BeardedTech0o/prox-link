@@ -171,7 +171,7 @@ export default function GuestDetail() {
             <div className="card flex flex-col gap-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="h-11 w-11 rounded-xl bg-accent/[0.12] grid place-items-center">
+                  <div className="h-11 w-11 rounded-2xl bg-accent/[0.12] grid place-items-center">
                     <Icon name={type === 'lxc' ? 'deployed_code' : 'computer'} className="text-accent" />
                   </div>
                   <div>
@@ -268,7 +268,7 @@ export default function GuestDetail() {
                     <button
                       onClick={() => saveConfig.mutate()}
                       disabled={saveConfig.isPending}
-                      className="px-4 py-2 rounded-xl bg-accent text-white text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-40 flex items-center gap-2"
+                      className="px-4 py-2 rounded-2xl bg-accent text-gray-950 text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-40 flex items-center gap-2"
                     >
                       {saveConfig.isPending && <Spinner size={16} />} Save
                     </button>

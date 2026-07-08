@@ -5,34 +5,34 @@
 /* Self-hosted so icons never depend on reaching Google's CDN (self-hosted
    deployments may have restricted/filtered outbound network access). */
 @font-face {
-  font-family: 'Material Symbols Outlined';
+  font-family: 'Material Symbols Rounded';
   font-style: normal;
   font-weight: 100 700;
   font-display: block;
-  src: url('/fonts/material-symbols-outlined.woff2') format('woff2');
+  src: url('/fonts/material-symbols-rounded.woff2') format('woff2');
 }
 
 :root {
-  --c-base: 241 244 248; /* #f1f4f8 — page bg */
+  --c-base: 234 242 243; /* #eaf2f3 — page bg */
   --c-surface: 255 255 255; /* cards, sidebar, modals */
-  --c-elevated: 248 250 252; /* inputs, hover bg */
-  --c-border: 213 220 229; /* subtle borders */
-  --c-primary: 15 23 42; /* near-black text */
-  --c-secondary: 71 85 105; /* muted text */
-  --c-accent: 139 92 246; /* violet default — overridden by theme-init.js */
-  --c-accent-hover: 167 139 250;
+  --c-elevated: 240 246 247; /* inputs, hover bg */
+  --c-border: 224 234 236; /* subtle borders */
+  --c-primary: 22 25 29; /* near-black text */
+  --c-secondary: 100 112 122; /* muted text */
+  --c-accent: 215 255 62; /* lime default — overridden by theme-init.js */
+  --c-accent-hover: 183 217 53;
   --c-success: 16 185 129;
   --c-warning: 245 158 11;
   --c-danger: 239 68 68;
 }
 
 html.dark {
-  --c-base: 7 11 20;
-  --c-surface: 13 20 33;
-  --c-elevated: 19 28 46;
-  --c-border: 30 45 69;
-  --c-primary: 232 237 245;
-  --c-secondary: 122 139 163;
+  --c-base: 12 12 9;
+  --c-surface: 26 26 20;
+  --c-elevated: 36 36 25;
+  --c-border: 47 47 34;
+  --c-primary: 245 245 239;
+  --c-secondary: 146 146 138;
 }
 
 html {
@@ -50,7 +50,7 @@ html {
 }
 
 body {
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   color: rgb(var(--c-primary));
   background-color: rgb(var(--c-base));
   background-image: radial-gradient(
@@ -82,16 +82,16 @@ body {
 
 @layer components {
   .card {
-    @apply bg-surface rounded-2xl shadow-card p-5;
+    @apply bg-surface rounded-3xl shadow-card p-5;
   }
   .panel {
-    @apply bg-surface rounded-2xl shadow-card;
+    @apply bg-surface rounded-3xl shadow-card;
   }
   .panel-elevated {
-    @apply bg-elevated rounded-2xl shadow-card;
+    @apply bg-elevated rounded-3xl shadow-card;
   }
   .btn-ghost {
-    @apply px-3 py-1.5 rounded-xl hover:bg-elevated transition-colors cursor-pointer;
+    @apply px-3 py-1.5 rounded-full hover:bg-elevated transition-colors cursor-pointer;
   }
   .stat-label {
     @apply text-xs font-medium text-secondary uppercase tracking-wide;
@@ -100,9 +100,9 @@ body {
     @apply bg-elevated rounded animate-pulse;
   }
 
-  .material-symbols-outlined {
-    font-family: 'Material Symbols Outlined';
-    font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 20;
+  .material-symbols-rounded {
+    font-family: 'Material Symbols Rounded';
+    font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
     font-weight: normal;
     font-style: normal;
     line-height: 1;

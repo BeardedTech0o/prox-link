@@ -18,8 +18,8 @@ import { api } from '@/lib/client/fetcher';
 export default function SettingsPage() {
   const router = useRouter();
   const qc = useQueryClient();
-  const [theme, setThemeState] = useState<ThemeMode>('light');
-  const [accent, setAccentState] = useState<AccentKey>('violet');
+  const [theme, setThemeState] = useState<ThemeMode>('dark');
+  const [accent, setAccentState] = useState<AccentKey>('lime');
 
   useEffect(() => {
     setThemeState(getTheme());

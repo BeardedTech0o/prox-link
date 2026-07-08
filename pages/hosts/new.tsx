@@ -133,7 +133,7 @@ export default function NewHostPage() {
             <button
               onClick={() => save.mutate()}
               disabled={save.isPending || !form.name || !form.baseUrl || !form.tokenId || !form.secret}
-              className="px-4 py-2 rounded-xl bg-accent text-white text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-40 flex items-center gap-2 ml-auto"
+              className="px-4 py-2 rounded-2xl bg-accent text-gray-950 text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-40 flex items-center gap-2 ml-auto"
             >
               {save.isPending && <Spinner size={16} />}
               Save host

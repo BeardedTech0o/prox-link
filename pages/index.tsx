@@ -29,7 +29,7 @@ function GuestCard({ g }: { g: GuestRow }) {
       // the screen instead of truncating the guest name.
       className="card grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 hover:shadow-card-hover transition-shadow"
     >
-      <div className="h-10 w-10 rounded-xl bg-accent/[0.12] grid place-items-center">
+      <div className="h-10 w-10 rounded-2xl bg-accent/[0.12] grid place-items-center">
         <Icon name={type === 'lxc' ? 'deployed_code' : 'computer'} className="text-accent" />
       </div>
       <div className="min-w-0 overflow-hidden">
@@ -81,7 +81,7 @@ export default function Dashboard() {
             action={
               <Link
                 href="/hosts/new"
-                className="px-4 py-2 rounded-xl bg-accent text-white text-sm font-medium hover:opacity-90 transition-opacity"
+                className="px-4 py-2 rounded-2xl bg-accent text-gray-950 text-sm font-medium hover:opacity-90 transition-opacity"
               >
                 Add a host
               </Link>

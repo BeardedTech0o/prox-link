@@ -1,6 +1,5 @@
 import { useRouter } from 'next/router';
 import { useEffect, useRef, useState } from 'react';
-import AppBar from '@/components/AppBar';
 import Icon from '@/components/Icon';
 import { api } from '@/lib/client/fetcher';
 
@@ -116,10 +115,29 @@ export default function NodeConsolePage() {
   }, [hostId, node]);
 
   return (
-    <div ref={rootRef} className="fixed inset-0 h-screen flex flex-col">
-      <AppBar title="Node shell" subtitle={node} back={`/hosts`} />
-      <div className="flex-1 relative bg-black">
-        <div ref={containerRef} className="absolute inset-0 overflow-hidden" />
+    <div ref={rootRef} className="fixed inset-0 h-screen bg-black">
+      <div className="relative h-full">
+        <div
+          ref={containerRef}
+          className="absolute inset-0 overflow-hidden"
+          style={{ top: 'env(safe-area-inset-top)' }}
+        />
+        <div
+          className="absolute left-3 flex items-center gap-2 z-10"
+          style={{ top: 'calc(env(safe-area-inset-top) + 0.75rem)' }}
+        >
+          <button
+            type="button"
+            onClick={() => router.push('/hosts')}
+            aria-label="Go back"
+            className="h-10 w-10 rounded-full bg-black/60 text-white grid place-items-center backdrop-blur-sm active:scale-95 transition-transform"
+          >
+            <Icon name="arrow_back" size={20} />
+          </button>
+          <span className="px-3 py-1.5 rounded-full bg-black/60 text-white/80 text-xs font-medium backdrop-blur-sm">
+            {node}
+          </span>
+        </div>
         {phase !== 'connected' && (
           <div className="absolute inset-0 grid place-items-center text-white/80 pointer-events-none">
             <div className="flex flex-col items-center gap-2">

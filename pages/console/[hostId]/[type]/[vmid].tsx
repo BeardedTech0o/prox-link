@@ -1,10 +1,9 @@
 import { useRouter } from 'next/router';
 import { useEffect, useRef, useState } from 'react';
-import AppBar from '@/components/AppBar';
 import Icon from '@/components/Icon';
 import { api, pvePath } from '@/lib/client/fetcher';
 import { attachMobileKeyboard } from '@/lib/client/novncKeyboard';
-import { attachCoverScale } from '@/lib/client/novncScale';
+import { attachFitScale } from '@/lib/client/novncScale';
 import type { GuestType } from '@/lib/proxmox/endpoints';
 
 type Phase = 'connecting' | 'connected' | 'error' | 'closed';
@@ -110,13 +109,13 @@ export default function ConsolePage() {
           const detachKeyboard = keyInputRef.current
             ? attachMobileKeyboard(rfb, keyInputRef.current)
             : () => {};
-          const detachCoverScale = attachCoverScale(rfb, containerRef.current!);
+          const detachFitScale = attachFitScale(rfb, containerRef.current!);
 
           cleanupRef.current = () => {
             containerRef.current?.removeEventListener('touchstart', focusKeyInput);
             containerRef.current?.removeEventListener('mousedown', focusKeyInput);
             detachKeyboard();
-            detachCoverScale();
+            detachFitScale();
             rfb.disconnect();
           };
         } else {
@@ -177,14 +176,29 @@ export default function ConsolePage() {
   }, [hostId, type, vmid]);
 
   return (
-    <div ref={rootRef} className="fixed inset-0 h-screen flex flex-col">
-      <AppBar
-        title="Console"
-        subtitle={`${type.toUpperCase()} · #${vmid}`}
-        back={`/guest/${hostId}/${type}/${vmid}`}
-      />
-      <div className="flex-1 relative bg-black">
-        <div ref={containerRef} className="absolute inset-0 overflow-hidden" />
+    <div ref={rootRef} className="fixed inset-0 h-screen bg-black">
+      <div className="relative h-full">
+        <div
+          ref={containerRef}
+          className="absolute inset-0 overflow-hidden"
+          style={{ top: 'env(safe-area-inset-top)' }}
+        />
+        <div
+          className="absolute left-3 flex items-center gap-2 z-10"
+          style={{ top: 'calc(env(safe-area-inset-top) + 0.75rem)' }}
+        >
+          <button
+            type="button"
+            onClick={() => router.push(`/guest/${hostId}/${type}/${vmid}`)}
+            aria-label="Go back"
+            className="h-10 w-10 rounded-full bg-black/60 text-white grid place-items-center backdrop-blur-sm active:scale-95 transition-transform"
+          >
+            <Icon name="arrow_back" size={20} />
+          </button>
+          <span className="px-3 py-1.5 rounded-full bg-black/60 text-white/80 text-xs font-medium backdrop-blur-sm">
+            {type.toUpperCase()} · #{vmid}
+          </span>
+        </div>
         {/* Off-screen but focusable: gives mobile browsers something to pop
             the on-screen keyboard up for when driving a VNC session (a
             canvas has no text input of its own). Keystrokes typed here are
@@ -205,7 +219,8 @@ export default function ConsolePage() {
             type="button"
             onClick={showKeyboard}
             aria-label="Show keyboard"
-            className="absolute bottom-4 right-4 h-12 w-12 rounded-full bg-black/60 text-white grid place-items-center backdrop-blur-sm active:scale-95 transition-transform"
+            className="absolute right-4 h-12 w-12 rounded-full bg-black/60 text-white grid place-items-center backdrop-blur-sm active:scale-95 transition-transform"
+            style={{ bottom: 'calc(env(safe-area-inset-bottom) + 1rem)' }}
           >
             <Icon name="keyboard" size={22} />
           </button>

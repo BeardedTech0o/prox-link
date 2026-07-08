@@ -1,10 +1,9 @@
-// noVNC's own scaleViewport option fits the remote framebuffer to the
-// container while preserving its aspect ratio ("contain"), which letterboxes
-// low-resolution consoles (e.g. an 80x25 text-mode boot screen) — most of the
-// screen ends up black, and the handful of printed lines stay tiny. This
-// instead crops the framebuffer to the container's aspect ratio and scales to
-// fill it completely ("cover"), trading a little cropped margin for text
-// that's actually readable.
+// Scales the remote framebuffer to fit entirely inside the container,
+// preserving aspect ratio and cropping nothing — the whole remote screen is
+// always visible (letterboxed above/below or left/right as needed), so
+// nothing like a Windows taskbar or Start button ever ends up scrolled out
+// of view. This is noVNC's own "contain" behavior, just re-applied after
+// every resize (see below) rather than left to fire once.
 //
 // RFB's own resize handling (triggered by its internal ResizeObserver, or by
 // toggling scaleViewport) always resets Display.scale to 1 and the viewport
@@ -17,33 +16,28 @@ interface NoVncDisplay {
   clipViewport: boolean;
   scale: number;
   viewportChangeSize(width: number, height: number): void;
-  viewportChangePos(deltaX: number, deltaY: number): void;
 }
 
-function applyCoverScale(display: NoVncDisplay, containerWidth: number, containerHeight: number) {
+function applyFitScale(display: NoVncDisplay, containerWidth: number, containerHeight: number) {
   const fbWidth = display.width;
   const fbHeight = display.height;
   if (!containerWidth || !containerHeight || !fbWidth || !fbHeight) return;
 
-  const scale = Math.max(containerWidth / fbWidth, containerHeight / fbHeight);
-  const vpWidth = Math.min(fbWidth, containerWidth / scale);
-  const vpHeight = Math.min(fbHeight, containerHeight / scale);
+  const scale = Math.min(containerWidth / fbWidth, containerHeight / fbHeight);
 
-  display.clipViewport = true;
-  display.viewportChangeSize(vpWidth, vpHeight);
-  // Center the cropped region rather than anchoring it top-left.
-  display.viewportChangePos((fbWidth - vpWidth) / 2, (fbHeight - vpHeight) / 2);
+  display.clipViewport = false;
+  display.viewportChangeSize(fbWidth, fbHeight);
   display.scale = scale;
 }
 
-export function attachCoverScale(rfb: any, container: HTMLElement): () => void {
+export function attachFitScale(rfb: any, container: HTMLElement): () => void {
   // RFB schedules its own post-resize update inside a requestAnimationFrame;
   // running ours a frame later lets it settle first instead of racing it.
   const reapply = () => {
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         const display = rfb._display as NoVncDisplay | undefined;
-        if (display) applyCoverScale(display, container.clientWidth, container.clientHeight);
+        if (display) applyFitScale(display, container.clientWidth, container.clientHeight);
       });
     });
   };

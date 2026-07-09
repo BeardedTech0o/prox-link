@@ -11,10 +11,17 @@
 //    taskbar or Start button ever ends up scrolled out of view — trading a
 //    bit of size for never hiding part of the screen.
 //
-// RFB's own resize handling (triggered by its internal ResizeObserver, or by
-// toggling scaleViewport) always resets Display.scale to 1 and the viewport
-// to the full framebuffer, so this must be re-applied after every resize
-// rather than set once.
+// noVNC's own RFB instance calls its internal _updateScale()/_updateClip()
+// on every resize it observes — its own ResizeObserver on the container, and
+// (now that resizeSession is on) server-driven desktop-size renegotiation —
+// and those always reset Display.scale/clipViewport back to whatever
+// `scaleViewport` dictates, completely independent of anything set from the
+// outside. Reacting after the fact on a delay (the previous approach here)
+// is a race those internal calls can win, especially now that resizeSession
+// gives RFB more resize events to react to on its own. Monkey-patching
+// _updateScale/_updateClip directly removes the race: whenever RFB decides a
+// rescale is needed, for any reason, it calls straight into this logic
+// instead of its own default.
 
 const LOW_RES_HEIGHT_THRESHOLD = 600;
 
@@ -61,21 +68,28 @@ function applyAutoScale(display: NoVncDisplay, containerWidth: number, container
 }
 
 export function attachFitScale(rfb: any, container: HTMLElement): () => void {
-  // RFB schedules its own post-resize update inside a requestAnimationFrame;
-  // running ours a frame later lets it settle first instead of racing it.
-  const reapply = () => {
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        const display = rfb._display as NoVncDisplay | undefined;
-        if (display) applyAutoScale(display, container.clientWidth, container.clientHeight);
-      });
-    });
+  const apply = () => {
+    const display = rfb._display as NoVncDisplay | undefined;
+    if (display) applyAutoScale(display, container.clientWidth, container.clientHeight);
   };
 
+  const originalUpdateScale = rfb._updateScale?.bind(rfb);
+  const originalUpdateClip = rfb._updateClip?.bind(rfb);
+  rfb._updateScale = apply;
+  rfb._updateClip = apply;
+
+  // Also reapply on our own explicit triggers (initial connect, and window
+  // resize for cases RFB's own container ResizeObserver might miss, e.g. the
+  // visualViewport-driven layout shifts elsewhere on this page) — a frame
+  // later, so our own layout has settled first.
+  const reapply = () => requestAnimationFrame(() => requestAnimationFrame(apply));
   rfb.addEventListener('connect', reapply);
   window.addEventListener('resize', reapply);
+
   return () => {
     rfb.removeEventListener('connect', reapply);
     window.removeEventListener('resize', reapply);
+    if (originalUpdateScale) rfb._updateScale = originalUpdateScale;
+    if (originalUpdateClip) rfb._updateClip = originalUpdateClip;
   };
 }

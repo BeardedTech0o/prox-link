@@ -8,7 +8,7 @@ import ConfirmDialog from '@/components/ConfirmDialog';
 import Snapshots from '@/components/guest/Snapshots';
 import BackupNow from '@/components/guest/BackupNow';
 import { PageShell, CardSkeleton, ErrorState, StatusBadge, Spinner } from '@/components/ui';
-import { api, pvePath } from '@/lib/client/fetcher';
+import { api, pvePath, ApiError } from '@/lib/client/fetcher';
 import type { GuestType } from '@/lib/proxmox/endpoints';
 
 interface GuestStatus {
@@ -90,19 +90,30 @@ export default function GuestDetail() {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [editing, setEditing] = useState(false);
   const [edits, setEdits] = useState<Record<string, string>>({});
+  const [original, setOriginal] = useState<Record<string, string>>({});
   const [newFieldKey, setNewFieldKey] = useState('');
 
   const saveConfig = useMutation({
     mutationFn: () => {
       if (!node) throw new Error('Node unknown');
+      // Only send fields that actually changed (or are brand new), not every
+      // field the guest happens to have. Re-sending every field verbatim
+      // (including ones the user never touched) risks a stricter PUT-time
+      // validator rejecting some untouched value, breaking the whole save
+      // over a field the user didn't even mean to edit.
+      const changed: Record<string, string> = {};
+      for (const [k, v] of Object.entries(edits)) {
+        if (original[k] !== v) changed[k] = v;
+      }
       return api(pvePath(hostId, `/nodes/${node}/${type}/${vmid}/config`), {
         method: 'PUT',
-        body: JSON.stringify(edits),
+        body: JSON.stringify(changed),
       });
     },
     onSuccess: () => {
       setEditing(false);
       setEdits({});
+      setOriginal({});
       qc.invalidateQueries({ queryKey: ['guest-config', hostId, type, vmid] });
     },
   });
@@ -219,6 +230,7 @@ export default function GuestDetail() {
                         seed[k] = String(v ?? '');
                       }
                       setEdits(seed);
+                      setOriginal(seed);
                       setNewFieldKey('');
                       setEditing(true);
                     }}
@@ -294,11 +306,19 @@ export default function GuestDetail() {
                   </div>
 
                   {saveConfig.isError && (
-                    <p className="text-sm text-danger">{(saveConfig.error as Error).message}</p>
+                    <div className="text-sm text-danger flex flex-col gap-0.5">
+                      <p>{(saveConfig.error as ApiError).message}</p>
+                      {(saveConfig.error as ApiError).fieldErrors &&
+                        Object.entries((saveConfig.error as ApiError).fieldErrors!).map(([k, msg]) => (
+                          <p key={k} className="font-mono text-xs">
+                            {k}: {msg}
+                          </p>
+                        ))}
+                    </div>
                   )}
                   <div className="flex gap-2 justify-end">
                     <button
-                      onClick={() => { setEditing(false); setEdits({}); }}
+                      onClick={() => { setEditing(false); setEdits({}); setOriginal({}); }}
                       className="btn-ghost text-sm text-secondary"
                     >
                       Cancel

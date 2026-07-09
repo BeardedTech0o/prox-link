@@ -9,7 +9,7 @@ import Snapshots from '@/components/guest/Snapshots';
 import BackupNow from '@/components/guest/BackupNow';
 import { PageShell, CardSkeleton, ErrorState, StatusBadge, Spinner } from '@/components/ui';
 import { api, pvePath, ApiError } from '@/lib/client/fetcher';
-import { fieldGroups } from '@/lib/proxmox/configFields';
+import { fieldGroups, fieldEnum } from '@/lib/proxmox/configFields';
 import type { GuestType } from '@/lib/proxmox/endpoints';
 
 interface GuestStatus {
@@ -281,11 +281,35 @@ export default function GuestDetail() {
                           <Icon name="close" size={16} />
                         </button>
                       </div>
-                      <input
-                        className="w-full px-3 py-2 bg-surface rounded-xl border border-border text-sm font-mono outline-none focus:ring-2 focus:ring-accent/50 focus:border-transparent"
-                        value={edits[k] ?? ''}
-                        onChange={(e) => setEdits((p) => ({ ...p, [k]: e.target.value }))}
-                      />
+                      {(() => {
+                        const options = fieldEnum(type, k);
+                        if (!options) {
+                          return (
+                            <input
+                              className="w-full px-3 py-2 bg-surface rounded-xl border border-border text-sm font-mono outline-none focus:ring-2 focus:ring-accent/50 focus:border-transparent"
+                              value={edits[k] ?? ''}
+                              onChange={(e) => setEdits((p) => ({ ...p, [k]: e.target.value }))}
+                            />
+                          );
+                        }
+                        const current = edits[k] ?? '';
+                        // Keep an unrecognised existing value selectable/visible
+                        // rather than silently hiding or clobbering it.
+                        const withCurrent = current && !options.includes(current) ? [current, ...options] : options;
+                        return (
+                          <select
+                            className="w-full px-3 py-2 bg-surface rounded-xl border border-border text-sm font-mono outline-none focus:ring-2 focus:ring-accent/50 focus:border-transparent"
+                            value={current}
+                            onChange={(e) => setEdits((p) => ({ ...p, [k]: e.target.value }))}
+                          >
+                            {withCurrent.map((opt) => (
+                              <option key={opt} value={opt}>
+                                {opt}
+                              </option>
+                            ))}
+                          </select>
+                        );
+                      })()}
                     </div>
                   ))}
 

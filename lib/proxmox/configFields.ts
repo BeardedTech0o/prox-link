@@ -83,3 +83,35 @@ const LXC_GROUPS: FieldGroup[] = [
 export function fieldGroups(type: GuestType): FieldGroup[] {
   return type === 'lxc' ? LXC_GROUPS : QEMU_GROUPS;
 }
+
+// Fields that are plain on/off flags in Proxmox's schema, shared by both
+// guest types — rendered as a yes/no dropdown rather than free text.
+const BOOLEAN_FIELDS = new Set([
+  'onboot', 'protection', 'template', 'acpi', 'freeze', 'kvm', 'numa',
+  'reboot', 'tablet', 'localtime', 'tdf', 'unprivileged',
+]);
+
+// Fields with a fixed, documented set of valid values. Not every enum field
+// in PVE's schema is listed (e.g. cpu type has hundreds of valid models) —
+// only the ones worth a dropdown over typing from memory.
+const QEMU_ENUMS: Record<string, string[]> = {
+  vga: ['std', 'cirrus', 'vmware', 'qxl', 'qxl2', 'qxl3', 'qxl4', 'virtio', 'virtio-gl', 'serial0', 'serial1', 'serial2', 'serial3', 'none'],
+  ostype: ['other', 'wxp', 'w2k', 'w2k3', 'w2k8', 'wvista', 'win7', 'win8', 'win10', 'win11', 'l24', 'l26', 'solaris'],
+  scsihw: ['lsi', 'lsi53c810', 'virtio-scsi-pci', 'virtio-scsi-single', 'megasas', 'pvscsi'],
+  bios: ['seabios', 'ovmf'],
+  machine: ['pc', 'q35'],
+  hugepages: ['any', '2', '1024'],
+  keyboard: ['de', 'de-ch', 'da', 'en-gb', 'en-us', 'es', 'fi', 'fr', 'fr-be', 'fr-ca', 'fr-ch', 'hu', 'is', 'it', 'ja', 'lt', 'mk', 'nl', 'no', 'pl', 'pt', 'pt-br', 'sv', 'sl', 'tr'],
+};
+
+const LXC_ENUMS: Record<string, string[]> = {
+  ostype: ['debian', 'ubuntu', 'centos', 'fedora', 'opensuse', 'archlinux', 'alpine', 'gentoo', 'nixos', 'unmanaged'],
+  cmode: ['tty', 'console', 'shell'],
+};
+
+// Returns the valid value list for a field, or undefined if it's free-form
+// (no fixed enum, e.g. memory size, disk strings, tags, descriptions).
+export function fieldEnum(type: GuestType, key: string): string[] | undefined {
+  if (BOOLEAN_FIELDS.has(key)) return ['0', '1'];
+  return (type === 'lxc' ? LXC_ENUMS : QEMU_ENUMS)[key];
+}

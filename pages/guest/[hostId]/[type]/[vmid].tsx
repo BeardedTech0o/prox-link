@@ -9,6 +9,7 @@ import Snapshots from '@/components/guest/Snapshots';
 import BackupNow from '@/components/guest/BackupNow';
 import { PageShell, CardSkeleton, ErrorState, StatusBadge, Spinner } from '@/components/ui';
 import { api, pvePath, ApiError } from '@/lib/client/fetcher';
+import { fieldGroups } from '@/lib/proxmox/configFields';
 import type { GuestType } from '@/lib/proxmox/endpoints';
 
 interface GuestStatus {
@@ -92,6 +93,7 @@ export default function GuestDetail() {
   const [edits, setEdits] = useState<Record<string, string>>({});
   const [original, setOriginal] = useState<Record<string, string>>({});
   const [newFieldKey, setNewFieldKey] = useState('');
+  const [customField, setCustomField] = useState(false);
 
   const saveConfig = useMutation({
     mutationFn: () => {
@@ -114,6 +116,8 @@ export default function GuestDetail() {
       setEditing(false);
       setEdits({});
       setOriginal({});
+      setNewFieldKey('');
+      setCustomField(false);
       qc.invalidateQueries({ queryKey: ['guest-config', hostId, type, vmid] });
     },
   });
@@ -232,6 +236,7 @@ export default function GuestDetail() {
                       setEdits(seed);
                       setOriginal(seed);
                       setNewFieldKey('');
+                      setCustomField(false);
                       setEditing(true);
                     }}
                     className="btn-ghost text-sm text-accent flex items-center gap-1"
@@ -284,26 +289,67 @@ export default function GuestDetail() {
                     </div>
                   ))}
 
-                  <div className="flex gap-2 pt-1">
-                    <input
-                      placeholder="New field, e.g. vga"
-                      className="flex-1 px-3 py-2 bg-surface rounded-xl border border-border text-sm font-mono outline-none focus:ring-2 focus:ring-accent/50 focus:border-transparent"
-                      value={newFieldKey}
-                      onChange={(e) => setNewFieldKey(e.target.value)}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const key = newFieldKey.trim();
-                        if (!key || key in edits) return;
+                  {!customField ? (
+                    <select
+                      value=""
+                      onChange={(e) => {
+                        const key = e.target.value;
+                        if (!key) return;
+                        if (key === '__custom__') {
+                          setCustomField(true);
+                          return;
+                        }
                         setEdits((p) => ({ ...p, [key]: '' }));
-                        setNewFieldKey('');
                       }}
-                      className="btn-ghost text-sm text-accent flex items-center gap-1"
+                      className="w-full px-3 py-2 bg-surface rounded-xl border border-border text-sm outline-none focus:ring-2 focus:ring-accent/50 focus:border-transparent"
                     >
-                      <Icon name="add" size={18} /> Add
-                    </button>
-                  </div>
+                      <option value="">+ Add a field…</option>
+                      {fieldGroups(type).map((g) => {
+                        const opts = g.fields.filter((f) => !(f in edits));
+                        if (!opts.length) return null;
+                        return (
+                          <optgroup key={g.label} label={g.label}>
+                            {opts.map((f) => (
+                              <option key={f} value={f}>
+                                {f}
+                              </option>
+                            ))}
+                          </optgroup>
+                        );
+                      })}
+                      <option value="__custom__">Custom field…</option>
+                    </select>
+                  ) : (
+                    <div className="flex gap-2 pt-1">
+                      <input
+                        autoFocus
+                        placeholder="Field name"
+                        className="flex-1 px-3 py-2 bg-surface rounded-xl border border-border text-sm font-mono outline-none focus:ring-2 focus:ring-accent/50 focus:border-transparent"
+                        value={newFieldKey}
+                        onChange={(e) => setNewFieldKey(e.target.value)}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const key = newFieldKey.trim();
+                          if (!key || key in edits) return;
+                          setEdits((p) => ({ ...p, [key]: '' }));
+                          setNewFieldKey('');
+                          setCustomField(false);
+                        }}
+                        className="btn-ghost text-sm text-accent flex items-center gap-1"
+                      >
+                        <Icon name="add" size={18} /> Add
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => { setCustomField(false); setNewFieldKey(''); }}
+                        className="btn-ghost text-sm text-secondary"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  )}
 
                   {saveConfig.isError && (
                     <div className="text-sm text-danger flex flex-col gap-0.5">
@@ -318,7 +364,13 @@ export default function GuestDetail() {
                   )}
                   <div className="flex gap-2 justify-end">
                     <button
-                      onClick={() => { setEditing(false); setEdits({}); setOriginal({}); }}
+                      onClick={() => {
+                        setEditing(false);
+                        setEdits({});
+                        setOriginal({});
+                        setNewFieldKey('');
+                        setCustomField(false);
+                      }}
                       className="btn-ghost text-sm text-secondary"
                     >
                       Cancel

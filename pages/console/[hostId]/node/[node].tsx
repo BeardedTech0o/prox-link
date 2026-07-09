@@ -120,7 +120,7 @@ export default function NodeConsolePage() {
         <div
           ref={containerRef}
           className="absolute inset-0 overflow-hidden"
-          style={{ top: 'env(safe-area-inset-top)' }}
+          style={{ top: 'calc(env(safe-area-inset-top) + 4rem)' }}
         />
         <div
           className="absolute left-3 flex items-center gap-2 z-10"

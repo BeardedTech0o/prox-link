@@ -95,6 +95,14 @@ export default function ConsolePage() {
             credentials: { password: conn.password },
           });
           rfb.scaleViewport = true;
+          // Ask the VM's own display to resize to match our screen (e.g. a
+          // portrait phone) rather than only ever scaling a fixed landscape
+          // image. Only takes effect if the guest's video adapter/driver
+          // advertises support for it (QEMU's VirtIO-GPU/SPICE-style
+          // displays with the matching guest driver/agent installed); if
+          // unsupported, noVNC silently ignores this and the fit-scale
+          // letterboxing below is what's actually shown.
+          rfb.resizeSession = true;
           rfb.background = '#000';
           rfb.addEventListener('connect', () => setPhase('connected'));
           rfb.addEventListener('disconnect', () => setPhase('closed'));
@@ -181,7 +189,7 @@ export default function ConsolePage() {
         <div
           ref={containerRef}
           className="absolute inset-0 overflow-hidden"
-          style={{ top: 'env(safe-area-inset-top)' }}
+          style={{ top: 'calc(env(safe-area-inset-top) + 4rem)' }}
         />
         <div
           className="absolute left-3 flex items-center gap-2 z-10"

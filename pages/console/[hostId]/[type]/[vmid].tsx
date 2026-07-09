@@ -27,6 +27,11 @@ export default function ConsolePage() {
   const [phase, setPhase] = useState<Phase>('connecting');
   const [error, setError] = useState('');
   const [mode, setMode] = useState<'vnc' | 'term'>('vnc');
+  // TEMPORARY diagnostic overlay for the VNC scale investigation — shows the
+  // live framebuffer/container/scale numbers directly on screen so this can
+  // be screenshotted back without needing desktop devtools. Remove once
+  // root-caused.
+  const [scaleDebug, setScaleDebug] = useState('');
 
   // Neither a VNC canvas nor an xterm viewport is itself a DOM text input, so
   // mobile browsers won't pop up their on-screen keyboard on tap alone. xterm
@@ -119,11 +124,23 @@ export default function ConsolePage() {
             : () => {};
           const detachFitScale = attachFitScale(rfb, containerRef.current!);
 
+          const debugInterval = setInterval(() => {
+            const anyRfb = rfb as any;
+            const d = anyRfb._display;
+            const c = containerRef.current;
+            if (!d || !c) return;
+            const canvas = anyRfb._canvas as HTMLCanvasElement | undefined;
+            setScaleDebug(
+              `fb=${d.width}x${d.height} scale=${Number(d.scale).toFixed(3)} clip=${d.clipViewport} container=${c.clientWidth}x${c.clientHeight} canvasCSS=${canvas?.style.width}x${canvas?.style.height}`,
+            );
+          }, 500);
+
           cleanupRef.current = () => {
             containerRef.current?.removeEventListener('touchstart', focusKeyInput);
             containerRef.current?.removeEventListener('mousedown', focusKeyInput);
             detachKeyboard();
             detachFitScale();
+            clearInterval(debugInterval);
             rfb.disconnect();
           };
         } else {
@@ -207,6 +224,14 @@ export default function ConsolePage() {
             {type.toUpperCase()} · #{vmid}
           </span>
         </div>
+        {mode === 'vnc' && scaleDebug && (
+          <div
+            className="absolute left-2 right-2 z-10 px-2 py-1 rounded-lg bg-black/70 text-lime-300 text-[10px] font-mono break-all"
+            style={{ top: 'calc(env(safe-area-inset-top) + 3rem)' }}
+          >
+            {scaleDebug}
+          </div>
+        )}
         {/* Off-screen but focusable: gives mobile browsers something to pop
             the on-screen keyboard up for when driving a VNC session (a
             canvas has no text input of its own). Keystrokes typed here are

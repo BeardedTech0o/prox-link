@@ -68,6 +68,20 @@ function applyAutoScale(display: NoVncDisplay, containerWidth: number, container
 }
 
 export function attachFitScale(rfb: any, container: HTMLElement): () => void {
+  // noVNC centers its canvas inside `_screen` (a flex container) via
+  // `margin: auto` on the canvas — relying on flexbox auto-margins to
+  // resolve centering on the cross axis. In practice this leaves the canvas
+  // pinned to one edge instead of centered once it's smaller than the
+  // container (confirmed via an on-screen diagnostic: the computed scale and
+  // canvas CSS size were exactly correct, only the position was wrong).
+  // Setting alignItems/justifyContent explicitly removes any dependence on
+  // that auto-margin resolution.
+  const screen = rfb._screen as HTMLElement | undefined;
+  if (screen) {
+    screen.style.alignItems = 'center';
+    screen.style.justifyContent = 'center';
+  }
+
   const apply = () => {
     const display = rfb._display as NoVncDisplay | undefined;
     if (display) applyAutoScale(display, container.clientWidth, container.clientHeight);

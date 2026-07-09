@@ -1,6 +1,19 @@
-// Scales the remote framebuffer to always completely fill the container,
-// cropping whatever doesn't fit — regardless of the guest's resolution or
-// OS. No letterboxing, ever; the console area is always fully covered.
+// The real fix for filling the screen completely is resizeSession (set in
+// the console page): it asks the VM's own display to actually resize to
+// match the available screen — the exact container box, which already
+// excludes the on-screen keyboard (the root element is sized to
+// visualViewport, which shrinks when the keyboard opens) and the status bar
+// (the container sits below a top offset for that). When the guest's video
+// driver acks that request, the framebuffer arrives already the right shape
+// and this code has nothing to crop or letterbox — the fill is exact and
+// nothing is cropped.
+//
+// Not every guest supports that though (needs a video adapter/driver that
+// advertises the VNC "ExtendedDesktopSize" extension — e.g. QEMU's
+// VirtIO-GPU display type with the matching guest driver; plain "Standard
+// VGA" never will). For those, this falls back to fit-to-contain: the whole
+// screen stays visible, undistorted, with letterbox bars rather than
+// cropping a wide desktop down to a jarring, oversized sliver.
 //
 // noVNC's own RFB instance calls its internal _updateScale()/_updateClip()
 // on every resize it observes — its own ResizeObserver on the container, and
@@ -20,22 +33,17 @@ interface NoVncDisplay {
   clipViewport: boolean;
   scale: number;
   viewportChangeSize(width: number, height: number): void;
-  viewportChangePos(deltaX: number, deltaY: number): void;
 }
 
-function applyCoverScale(display: NoVncDisplay, containerWidth: number, containerHeight: number) {
+function applyFitScale(display: NoVncDisplay, containerWidth: number, containerHeight: number) {
   const fbWidth = display.width;
   const fbHeight = display.height;
   if (!containerWidth || !containerHeight || !fbWidth || !fbHeight) return;
 
-  const scale = Math.max(containerWidth / fbWidth, containerHeight / fbHeight);
-  const vpWidth = Math.min(fbWidth, containerWidth / scale);
-  const vpHeight = Math.min(fbHeight, containerHeight / scale);
+  const scale = Math.min(containerWidth / fbWidth, containerHeight / fbHeight);
 
-  display.clipViewport = true;
-  display.viewportChangeSize(vpWidth, vpHeight);
-  // Center the cropped region rather than anchoring it top-left.
-  display.viewportChangePos((fbWidth - vpWidth) / 2, (fbHeight - vpHeight) / 2);
+  display.clipViewport = false;
+  display.viewportChangeSize(fbWidth, fbHeight);
   display.scale = scale;
 }
 
@@ -56,7 +64,7 @@ export function attachFitScale(rfb: any, container: HTMLElement): () => void {
 
   const apply = () => {
     const display = rfb._display as NoVncDisplay | undefined;
-    if (display) applyCoverScale(display, container.clientWidth, container.clientHeight);
+    if (display) applyFitScale(display, container.clientWidth, container.clientHeight);
   };
 
   const originalUpdateScale = rfb._updateScale?.bind(rfb);

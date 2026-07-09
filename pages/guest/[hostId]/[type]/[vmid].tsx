@@ -90,6 +90,7 @@ export default function GuestDetail() {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [editing, setEditing] = useState(false);
   const [edits, setEdits] = useState<Record<string, string>>({});
+  const [newFieldKey, setNewFieldKey] = useState('');
 
   const saveConfig = useMutation({
     mutationFn: () => {
@@ -105,11 +106,6 @@ export default function GuestDetail() {
       qc.invalidateQueries({ queryKey: ['guest-config', hostId, type, vmid] });
     },
   });
-
-  // Fields safe to edit live for both guest types.
-  const EDITABLE = type === 'lxc'
-    ? ['hostname', 'cores', 'memory', 'onboot']
-    : ['name', 'cores', 'memory', 'onboot'];
 
   const act = useMutation({
     mutationFn: async (action: string) => {
@@ -218,8 +214,12 @@ export default function GuestDetail() {
                   <button
                     onClick={() => {
                       const seed: Record<string, string> = {};
-                      for (const k of EDITABLE) seed[k] = String(configQ.data![k] ?? '');
+                      for (const [k, v] of Object.entries(configQ.data!)) {
+                        if (k === 'digest') continue;
+                        seed[k] = String(v ?? '');
+                      }
                       setEdits(seed);
+                      setNewFieldKey('');
                       setEditing(true);
                     }}
                     className="btn-ghost text-sm text-accent flex items-center gap-1"
@@ -245,9 +245,25 @@ export default function GuestDetail() {
 
               {editing && (
                 <div className="flex flex-col gap-3">
-                  {EDITABLE.map((k) => (
+                  {Object.keys(edits).sort().map((k) => (
                     <div key={k} className="flex flex-col gap-1">
-                      <label className="text-xs font-medium text-secondary font-mono">{k}</label>
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-medium text-secondary font-mono">{k}</label>
+                        <button
+                          type="button"
+                          aria-label={`Remove ${k}`}
+                          onClick={() =>
+                            setEdits((p) => {
+                              const next = { ...p };
+                              delete next[k];
+                              return next;
+                            })
+                          }
+                          className="text-secondary hover:text-danger"
+                        >
+                          <Icon name="close" size={16} />
+                        </button>
+                      </div>
                       <input
                         className="w-full px-3 py-2 bg-surface rounded-xl border border-border text-sm font-mono outline-none focus:ring-2 focus:ring-accent/50 focus:border-transparent"
                         value={edits[k] ?? ''}
@@ -255,6 +271,28 @@ export default function GuestDetail() {
                       />
                     </div>
                   ))}
+
+                  <div className="flex gap-2 pt-1">
+                    <input
+                      placeholder="New field, e.g. vga"
+                      className="flex-1 px-3 py-2 bg-surface rounded-xl border border-border text-sm font-mono outline-none focus:ring-2 focus:ring-accent/50 focus:border-transparent"
+                      value={newFieldKey}
+                      onChange={(e) => setNewFieldKey(e.target.value)}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const key = newFieldKey.trim();
+                        if (!key || key in edits) return;
+                        setEdits((p) => ({ ...p, [key]: '' }));
+                        setNewFieldKey('');
+                      }}
+                      className="btn-ghost text-sm text-accent flex items-center gap-1"
+                    >
+                      <Icon name="add" size={18} /> Add
+                    </button>
+                  </div>
+
                   {saveConfig.isError && (
                     <p className="text-sm text-danger">{(saveConfig.error as Error).message}</p>
                   )}

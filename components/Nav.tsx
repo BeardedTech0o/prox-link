@@ -33,9 +33,7 @@ export default function Nav() {
                 key={t.href}
                 href={t.href}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
-                  active
-                    ? 'bg-accent/[0.12] border border-accent/20 text-accent shadow-[inset_3px_0_0_rgb(var(--c-accent))]'
-                    : 'border border-transparent text-secondary hover:text-primary hover:bg-elevated'
+                  active ? 'text-accent' : 'text-secondary hover:text-primary hover:bg-elevated'
                 }`}
               >
                 <Icon name={t.icon} size={22} />

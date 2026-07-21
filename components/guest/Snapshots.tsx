@@ -157,7 +157,7 @@ export default function Snapshots({
             <button
               aria-label={`Delete ${s.name}`}
               onClick={() => setDel(s)}
-              className="px-2 py-1.5 rounded-xl text-secondary hover:text-danger hover:bg-danger/10 transition-colors"
+              className="px-2 py-1.5 rounded-full text-secondary hover:text-danger hover:bg-danger/10 transition-colors"
             >
               <Icon name="delete" size={18} />
             </button>

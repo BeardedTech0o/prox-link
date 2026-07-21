@@ -54,7 +54,7 @@ export default function SettingsPage() {
                 <button
                   key={m}
                   onClick={() => chooseTheme(m)}
-                  className={`px-4 py-2 rounded-xl text-sm font-medium border capitalize flex items-center gap-2 transition-colors ${
+                  className={`px-4 py-2 rounded-full text-sm font-medium border capitalize flex items-center gap-2 transition-colors ${
                     theme === m
                       ? 'bg-accent/[0.12] border-accent/20 text-accent'
                       : 'border-border text-secondary hover:text-primary'
@@ -92,7 +92,7 @@ export default function SettingsPage() {
           </p>
           <button
             onClick={lockNow}
-            className="px-4 py-2 rounded-xl bg-elevated text-sm font-medium hover:bg-border/40 transition-colors flex items-center gap-2 w-fit"
+            className="px-4 py-2 rounded-2xl bg-elevated text-sm font-medium hover:bg-border/40 transition-colors flex items-center gap-2 w-fit"
           >
             <Icon name="lock" size={18} /> Lock now
           </button>

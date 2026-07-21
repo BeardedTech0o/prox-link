@@ -405,7 +405,7 @@ export default function CreatePage() {
                       <button
                         onClick={() => isoDownload.mutate()}
                         disabled={!isoUrl || !isoName || !isoStore || !isoNameValid || isoDownload.isPending || taskRunning}
-                        className="px-4 py-2 rounded-xl bg-elevated text-sm font-medium hover:bg-border/40 transition-colors disabled:opacity-40 flex items-center gap-2 w-fit"
+                        className="px-4 py-2 rounded-2xl bg-elevated text-sm font-medium hover:bg-border/40 transition-colors disabled:opacity-40 flex items-center gap-2 w-fit"
                       >
                         {isoDownload.isPending && <Spinner size={16} />} Start download
                       </button>
@@ -457,7 +457,7 @@ function TaskFailure({ stage, onDismiss }: { stage?: string; onDismiss: () => vo
       <p className="text-sm text-danger">{stage || 'The task failed.'}</p>
       <button
         onClick={onDismiss}
-        className="px-3 py-1.5 rounded-xl bg-elevated text-sm font-medium hover:bg-border/40 transition-colors w-fit"
+        className="px-3 py-1.5 rounded-2xl bg-elevated text-sm font-medium hover:bg-border/40 transition-colors w-fit"
       >
         Dismiss
       </button>

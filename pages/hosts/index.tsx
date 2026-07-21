@@ -43,14 +43,14 @@ function HostRow({ h, onDelete }: { h: PublicHost; onDelete: (h: PublicHost) => 
         <button
           aria-label={`Open shell on ${h.name}`}
           onClick={openConsole}
-          className="px-2 py-1.5 rounded-xl text-secondary hover:text-accent hover:bg-accent/10 transition-colors"
+          className="px-2 py-1.5 rounded-full text-secondary hover:text-accent hover:bg-accent/10 transition-colors"
         >
           <Icon name="terminal" size={20} />
         </button>
         <button
           aria-label={`Delete ${h.name}`}
           onClick={() => onDelete(h)}
-          className="px-2 py-1.5 rounded-xl text-secondary hover:text-danger hover:bg-danger/10 transition-colors"
+          className="px-2 py-1.5 rounded-full text-secondary hover:text-danger hover:bg-danger/10 transition-colors"
         >
           <Icon name="delete" size={20} />
         </button>
@@ -66,7 +66,7 @@ function HostRow({ h, onDelete }: { h: PublicHost; onDelete: (h: PublicHost) => 
             <Link
               key={n.node}
               href={`/console/${h.id}/node/${n.node}`}
-              className="flex items-center gap-2 px-3 py-2 rounded-xl bg-elevated text-sm font-medium hover:bg-border/40 transition-colors"
+              className="flex items-center gap-2 px-3 py-2 rounded-2xl bg-elevated text-sm font-medium hover:bg-border/40 transition-colors"
             >
               <Icon name="terminal" size={18} className="text-accent" />
               {n.node}

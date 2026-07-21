@@ -26,10 +26,20 @@ module.exports = {
           DEFAULT: 'rgb(var(--c-danger) / <alpha-value>)',
           dim: 'rgb(var(--c-danger) / 0.12)',
         },
+        'data-cyan': 'rgb(var(--c-data-cyan) / <alpha-value>)',
+        'data-orange': 'rgb(var(--c-data-orange) / <alpha-value>)',
       },
       fontFamily: {
         sans: ['Poppins', 'system-ui', 'sans-serif'],
         mono: ['JetBrains Mono', 'Fira Code', 'Consolas', 'monospace'],
+      },
+      borderRadius: {
+        // Deliberate scale, not "everything rounded": small elements/inputs,
+        // buttons/medium tiles, large cards/tiles. Pills (chips, toggles,
+        // badges, icon-only buttons) use Tailwind's default `rounded-full`.
+        xl: '1.1rem',
+        '2xl': '1.4rem',
+        '3xl': '1.85rem',
       },
       boxShadow: {
         card: '0 1px 2px 0 rgba(16,24,40,0.04), 0 6px 20px -4px rgba(16,24,40,0.06)',

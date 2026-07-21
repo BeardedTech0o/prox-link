@@ -72,8 +72,8 @@ export default function ConfirmDialog({
           <button
             onClick={onConfirm}
             disabled={blocked || busy}
-            className={`px-4 py-2 rounded-xl text-sm font-medium text-white transition-opacity disabled:opacity-40 ${
-              danger ? 'bg-danger' : 'bg-accent'
+            className={`px-4 py-2 rounded-2xl text-sm font-medium transition-opacity disabled:opacity-40 ${
+              danger ? 'bg-danger text-white' : 'bg-accent text-gray-950'
             } hover:opacity-90`}
           >
             {busy ? 'Working…' : confirmLabel}

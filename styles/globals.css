@@ -24,6 +24,11 @@
   --c-success: 16 185 129;
   --c-warning: 245 158 11;
   --c-danger: 239 68 68;
+  /* Distinct fluorescent hues for secondary data/category use (multiple
+     chart series, tags, etc.) — deliberately not shades of the accent,
+     which blend together when used side by side. */
+  --c-data-cyan: 0 229 255;
+  --c-data-orange: 255 145 0;
 }
 
 html.dark {
